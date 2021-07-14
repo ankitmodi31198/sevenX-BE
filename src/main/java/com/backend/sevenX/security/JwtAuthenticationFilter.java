@@ -19,8 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class JwtAuthenticationFilter extends OncePerRequestFilter
-{
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
 
@@ -32,32 +31,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
-/*
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader("Access-Control-Allow-Credentials", "true");
-        res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
-        res.setHeader("Access-Control-Max-Age", "3600");
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, remember-me");
-*/
 
-        String header = req.getHeader(Constant.JwtConst.KEY_AUTHORIZATION);
+        String jwt = req.getHeader(Constant.JwtConst.KEY_AUTHORIZATION);
         String username = null;
-        String authToken = null;
 
-        if (header != null)
-        {
-            authToken =header;
+        if (jwt != null) {
             try {
-                 username = jwtTokenUtil.getUsernameFromToken(authToken);
-                Users admin = usersRepo.findByUsernameAndDeletedAtIsNull(username);
+                username = jwtTokenUtil.getUsernameFromToken(jwt);
+                Users admin = usersRepo.findByUsername(username);
                 // User is guest Type
-              if(admin!=null) {
-                    boolean tokenVerified = false;
-                    if(authToken.equals(admin.getJwtToken())){
-                            tokenVerified = true;
-                    }else {
-                        username = null;
-                    }
+                if (admin == null) {
+                    username = null;
                 }
 
             } catch (Exception e) {
@@ -65,20 +49,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
             }
 
         } else {
-            logger.warn("couldn't find authorization string, will ignore the header");
+            logger.warn("couldn't find authorization string, will ignore the jwt");
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null)
-        {
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            //if (jwtTokenUtil.validateToken(authToken, userDetails))
-            // {
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN")));
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
-            logger.info("authenticated user " + username + ", setting security context");
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            //validating jwt
+            if (jwtTokenUtil.validateToken(jwt, userDetails)) {
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+                logger.info("authenticated user " + username + ", setting security context");
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
             //}
         }
+
         chain.doFilter(req, res);
     }
 }

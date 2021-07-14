@@ -1,10 +1,13 @@
 package com.backend.sevenX.data.dto.responseDto;
-import lombok.Data;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class LoginResponseDto {
 
     private String username;
 
-    private String jwtToken;
+    private String jwt;
 }

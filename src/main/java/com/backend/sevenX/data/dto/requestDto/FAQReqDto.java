@@ -1,9 +1,13 @@
 package com.backend.sevenX.data.dto.requestDto;
 
-import com.sun.istack.NotNull;
-import lombok.Data;
 
-@Data
+import javax.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
+
+@Getter
+@Setter
 public class FAQReqDto {
 
 	@NotNull

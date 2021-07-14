@@ -44,13 +44,13 @@ public class UserServiceImpl implements UserService {
 	private ModelMapper mapper = new ModelMapper();
 
 	public ResponseEntity<?> login(LoginDto loginDto) {
-		Users users = usersRepo.findByUsernameAndDeletedAtIsNull(loginDto.getUsername());
+		Users users = usersRepo.findByUsername(loginDto.getUsername());
 		if (users != null) {
 			if (General.checkPassword(loginDto.getPassword(), users.getPassword())) {
-				String jwtToken = jwtTokenUtil.generateToken(users.getUsername(), users.getId(), users.getRole());
-				users.setJwtToken(jwtToken);
+				String jwt = jwtTokenUtil.generateToken(users.getUsername(), users.getId(), users.getRole());
 				usersRepo.save(users);
 				LoginResponseDto loginRes = mapper.map(users, LoginResponseDto.class);
+				loginRes.setJwt(jwt);
 				return new ResponseEntity<>(new CommonResponse().getResponse(
 					HttpStatus.OK.value(),
 					Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
@@ -65,16 +65,16 @@ public class UserServiceImpl implements UserService {
 
 	public ResponseEntity<?> signUp(SignUpDto signUpDto, String role) {
 
-		Users tempUsers = usersRepo.findByUsernameAndDeletedAtIsNull(signUpDto.getUsername());
+		Users tempUsers = usersRepo.findByUsername(signUpDto.getUsername());
 		if (tempUsers == null) {
 			Users users = mapper.map(signUpDto, Users.class);
 			users.setRole(role);
 			users.setPassword(General.hashPassword(signUpDto.getPassword()));
 			users = usersRepo.save(users);
-			String jwtToken = jwtTokenUtil.generateToken(users.getUsername(), users.getId(), users.getRole());
-			users.setJwtToken(jwtToken);
+			String jwt = jwtTokenUtil.generateToken(users.getUsername(), users.getId(), users.getRole());
 			usersRepo.save(users);
 			LoginResponseDto loginRes = mapper.map(users, LoginResponseDto.class);
+			loginRes.setJwt(jwt);
 			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
 				Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
 		} else {
@@ -84,11 +84,11 @@ public class UserServiceImpl implements UserService {
 	}
 
 	public ResponseEntity<?> logout(Integer userId) {
-		Users users = usersRepo.findById(userId).orElse(null);
+		//no need to do anything will be managed only from front
+		/*Users users = usersRepo.findById(userId).orElse(null);
 		if (users != null) {
-			users.setJwtToken("");
 			usersRepo.save(users);
-		}
+		}*/
 		return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
 			Constant.Messages.SUCCESS, null), HttpStatus.OK);
 	}
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
 	public ResponseEntity<?> getAllFAQ() {
 		try {
 			List<FAQ> faqList = faqRepo.findAll();
-			if (faqList != null && faqList.size() > 0) {
+			if (faqList.size() > 0) {
 				Type targetListType = new TypeToken<List<FAQResDto>>() {
 				}.getType();
 				List<FAQResDto> faqDtoList = mapper.map(faqList, targetListType);

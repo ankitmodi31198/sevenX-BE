@@ -22,7 +22,7 @@ public class UserAuthenticate implements UserDetailsService
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
     {
 
-        Users user = usersRepo.findByUsernameAndDeletedAtIsNull(username);
+        Users user = usersRepo.findByUsername(username);
         if(user == null){
             throw new UsernameNotFoundException("Invalid email or password.");
         }

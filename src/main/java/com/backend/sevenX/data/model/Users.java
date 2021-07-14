@@ -1,92 +1,47 @@
 package com.backend.sevenX.data.model;
 
-import lombok.Data;
+import com.backend.sevenX.utills.Constant;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 @Entity
-@Data
+@Getter
+@Setter
+@DynamicInsert
+@Table( name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"username", Constant.EntityField.DELETED_AT})
+                // hibernate bug of inheritance second parameter accepting as entity variable name
+        })
+//soft delete condition
+@SQLDelete(sql =
+        "UPDATE users SET "+ Constant.DbField.DELETED_AT +"=now() " +
+                "WHERE id = ?")
+@Where(clause = Constant.DbField.DELETED_AT +" IS NULL")
 public class Users extends Base{
 
-    @Column(unique = true)
     private String username;
 
     private String password;
 
-    private String firstName;
+    private String firstName = "";
 
-    private String lastName;
+    private String lastName = "";
 
-    private String phoneNo;
+    private String phoneNo = "";
 
-    private String address;
+    private String address = "";
 
     private String role;
 
-    private String jwtToken;
-
-    public String getJwtToken() {
-        return jwtToken;
-    }
-
-    public void setJwtToken(String jwtToken) {
-        this.jwtToken = jwtToken;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getPhoneNo() {
-        return phoneNo;
-    }
-
-    public void setPhoneNo(String phoneNo) {
-        this.phoneNo = phoneNo;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    //no need to save jwt
+   // private String jwtToken;
 }

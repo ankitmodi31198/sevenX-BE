@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -63,12 +64,18 @@ public class JwtTokenUtil implements Serializable {
         Claims claims = Jwts.claims().setSubject(subject);
         claims.put("scopes", Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN")));
         claims.put("role", role);
+
+        //setting expiration time of jwt
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, Constant.EXPIRATION_TIME_JWT);
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setId(String.valueOf(id))
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .signWith(SignatureAlgorithm.HS256, Base64.getEncoder().encodeToString(Constant.JwtConst.JWT_PRIVATE_KEY.getBytes()))
                 .setHeaderParam("typ", "JWT")
+                .setExpiration(calendar.getTime())
                 .compact();
     }
 

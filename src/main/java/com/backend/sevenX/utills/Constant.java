@@ -2,6 +2,8 @@ package com.backend.sevenX.utills;
 
 public class Constant {
 
+    public static final int EXPIRATION_TIME_JWT = 3; //in months
+
     public interface Response {
         String STATUS = "status";
         String MESSAGE = "message";
@@ -42,6 +44,13 @@ public class Constant {
        String JWT_PRIVATE_KEY = "sevenXstartUpJWT";
        String KEY_AUTHORIZATION = "Authorization";
        Integer WORKLOAD = 12;
+    }
+
+    public interface DbField{
+        String DELETED_AT = "deleted_at";
+    }
+    public interface EntityField{
+        String DELETED_AT = "deletedAt";
     }
 }
 
