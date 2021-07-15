@@ -25,9 +25,12 @@ import javax.persistence.PersistenceContext;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+	private static final String LoginTypeNormal = "Normal";
 
 	@PersistenceContext
 	public EntityManager entityManager;
@@ -44,22 +47,35 @@ public class UserServiceImpl implements UserService {
 	private ModelMapper mapper = new ModelMapper();
 
 	public ResponseEntity<?> login(LoginDto loginDto) {
-		Users users = usersRepo.findByUsername(loginDto.getUsername());
-		if (users != null) {
-			if (General.checkPassword(loginDto.getPassword(), users.getPassword())) {
-				String jwt = jwtTokenUtil.generateToken(users.getUsername(), users.getId(), users.getRole());
-				usersRepo.save(users);
-				LoginResponseDto loginRes = mapper.map(users, LoginResponseDto.class);
+		Users existUsers = usersRepo.findByUsername(loginDto.getUsername());
+		if (Objects.nonNull(existUsers) && loginDto.getLoginType().equals(LoginTypeNormal)) {
+			if (General.checkPassword(loginDto.getPassword(), existUsers.getPassword())) {
+				usersRepo.save(existUsers);
+				LoginResponseDto loginRes = mapper.map(existUsers, LoginResponseDto.class);
+				String jwt = jwtTokenUtil.generateToken(existUsers.getUsername(), existUsers.getId(), existUsers.getRole());
 				loginRes.setJwt(jwt);
 				return new ResponseEntity<>(new CommonResponse().getResponse(
 					HttpStatus.OK.value(),
 					Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.BAD_REQUEST.value(),
+					Constant.Messages.PASSWORD_IS_WRONG, null), HttpStatus.BAD_REQUEST);
 			}
-			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.BAD_REQUEST.value(),
-				Constant.Messages.PASSWORD_IS_WRONG, null), HttpStatus.BAD_REQUEST);
 		} else {
-			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-				Constant.Messages.USER_NOT_FOUND, null), HttpStatus.NOT_FOUND);
+			if (!loginDto.getLoginType().equals(LoginTypeNormal) && Objects.nonNull(loginDto.getSocialId())) {
+				Users newUsers = mapper.map(loginDto, Users.class);
+				newUsers.setRole("User");
+				usersRepo.save(newUsers);
+				String jwt = jwtTokenUtil.generateToken(newUsers.getUsername(), newUsers.getId(), newUsers.getRole());
+				LoginResponseDto loginRes = mapper.map(newUsers, LoginResponseDto.class);
+				loginRes.setJwt(jwt);
+				return new ResponseEntity<>(new CommonResponse().getResponse(
+					HttpStatus.OK.value(),
+					Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
+			} else
+				return new ResponseEntity<>(new CommonResponse().getResponse(
+					HttpStatus.OK.value(),
+					Constant.Messages.USER_NOT_FOUND, "Not Found User"), HttpStatus.NOT_FOUND);
 		}
 	}
 

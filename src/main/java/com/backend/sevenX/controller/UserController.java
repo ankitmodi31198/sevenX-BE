@@ -64,7 +64,7 @@ public class UserController {
 	@PostMapping(Constant.EndPoints.AdminSignUp)
 	public ResponseEntity<?> adminSignUp(@RequestBody SignUpDto signUpDto) throws Exception {
 		try {
-			return userService.signUp(signUpDto,"Users");
+			return userService.signUp(signUpDto,"Admin");
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),

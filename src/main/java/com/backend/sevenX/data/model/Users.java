@@ -32,6 +32,8 @@ public class Users extends Base{
 
     private String password;
 
+    private String socialId;
+
     private String firstName = "";
 
     private String lastName = "";
