@@ -61,8 +61,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable().
+    protected void configure(HttpSecurity http) {
+        try {
+            http.cors().and().csrf().disable().
                 authorizeRequests()
                 .antMatchers(getOtherFilters()).permitAll()
                 .anyRequest().authenticated()
@@ -70,7 +71,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
+            http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private String[] get8080Filters() {
@@ -93,7 +98,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    public void configure(WebSecurity web) throws Exception {
+    public void configure(WebSecurity web) {
         web.ignoring()
                 .antMatchers("/v2/api-docs", "/configuration/**", "/swagger-resources/**", "/swagger-ui.html", "/webjars/**", "/api-docs/**");
         super.configure(web);

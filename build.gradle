@@ -1,5 +1,5 @@
 plugins {
-	id 'org.springframework.boot' version '2.1.18.RELEASE'
+	id 'org.springframework.boot' version '2.2.0.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 	id 'war'
@@ -8,7 +8,13 @@ plugins {
 group = 'com.backend'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
+targetCompatibility = 1.8
 
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+}
 
 repositories {
 	mavenCentral()
@@ -20,6 +26,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation group: 'org.apache.maven', name: 'maven-model', version: '2.2.0'
 	implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.4.3'
+	implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core'
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	runtimeOnly 'mysql:mysql-connector-java'
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	compileOnly 'org.projectlombok:lombok:1.18.20'
@@ -27,8 +35,11 @@ dependencies {
 	compile 'io.jsonwebtoken:jjwt:0.6.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+	implementation "joda-time:joda-time:2.2"
+	testImplementation "junit:junit:4.12"
 }
 
 test {
 	useJUnitPlatform()
 }
+
