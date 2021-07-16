@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public class UserController {
 	}
 
 	@PostMapping(Constant.EndPoints.LOGIN)
-	public ResponseEntity<?> login(@RequestBody LoginDto loginDto) throws Exception {
+	public ResponseEntity<?> login(@RequestBody @Valid LoginDto loginDto) throws Exception {
 		try {
 			return userService.login(loginDto);
 		} catch (Exception e) {
@@ -51,25 +52,14 @@ public class UserController {
 	}
 
 	@PostMapping(Constant.EndPoints.SIGNUP)
-	public ResponseEntity<?> userSignUp(@RequestBody SignUpDto signUpDto) throws Exception {
-		try {
-			return userService.signUp(signUpDto,"User");
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-				Constant.Messages.SOMETHING_WENT_WRONG, null), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<?> userSignUp(@RequestBody @Valid SignUpDto signUpDto) throws Exception {
+		return userService.signUp(signUpDto,"User");
 	}
 
 	@PostMapping(Constant.EndPoints.AdminSignUp)
-	public ResponseEntity<?> adminSignUp(@RequestBody SignUpDto signUpDto) throws Exception {
-		try {
-			return userService.signUp(signUpDto,"Admin");
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-				Constant.Messages.SOMETHING_WENT_WRONG, null), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<?> adminSignUp(@RequestBody @Valid SignUpDto signUpDto) throws Exception {
+
+		return userService.signUp(signUpDto,"Admin");
 	}
 
 	@GetMapping(Constant.EndPoints.LOGOUT)

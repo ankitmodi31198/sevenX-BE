@@ -44,6 +44,8 @@ public class Users extends Base{
 
     private String role;
 
+    private String loginType;
+
     //no need to save jwt
    // private String jwtToken;
 }

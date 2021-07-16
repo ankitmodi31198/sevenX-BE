@@ -14,9 +14,11 @@ public class LoginDto {
     @NotNull
     private String username;
 
+    @NotNull
     private String password;
 
     private String socialId;
 
+    @NotNull
     private String loginType;
 }

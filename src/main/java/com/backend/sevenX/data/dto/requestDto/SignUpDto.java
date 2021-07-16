@@ -22,4 +22,9 @@ public class SignUpDto {
     private String phoneNo;
 
     private String address;
+
+    private String socialId;
+
+    @NotNull
+    private String loginType;
 }
