@@ -26,7 +26,7 @@ public class General {
         return(password_verified);
     }
 
-    public static String createSignUpCode() {
+    public static String createRandomCode() {
         // syntax we would like to generate is DIA123456-A1B34
         String val = "";
 

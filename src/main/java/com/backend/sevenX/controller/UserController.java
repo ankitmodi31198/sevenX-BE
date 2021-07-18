@@ -1,21 +1,17 @@
 package com.backend.sevenX.controller;
 
 import com.backend.sevenX.config.CommonResponse;
+import com.backend.sevenX.data.dto.requestDto.EmailReqDto;
 import com.backend.sevenX.data.dto.requestDto.LoginDto;
 import com.backend.sevenX.data.dto.requestDto.SignUpDto;
+import com.backend.sevenX.data.dto.requestDto.TokenDto;
 import com.backend.sevenX.security.JwtTokenUtil;
 import com.backend.sevenX.service.UserService;
 import com.backend.sevenX.utills.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -87,5 +83,24 @@ public class UserController {
 	@GetMapping(Constant.EndPoints.PROFILE)
 	public ResponseEntity<?> getProfileByUser(@RequestAttribute("userId") Integer userId) throws Exception {
 		return userService.getProfileByUser(userId);
+	}
+
+	@PutMapping(Constant.EndPoints.PROFILE)
+	public ResponseEntity<?> editProfileByUser(@RequestAttribute("userId") Integer userId, @RequestBody SignUpDto signUpDto) {
+		return userService.editProfileByUser(userId,signUpDto);
+	}
+
+	@PostMapping(Constant.EndPoints.FORGOT_PASSWORD)
+	public ResponseEntity<?> forgotPassword(
+											@RequestBody @Valid EmailReqDto emailReqDto
+	) {
+		return userService.forgotPassword(emailReqDto);
+	}
+
+	@PostMapping(Constant.EndPoints.RESET_PASSWORD)
+	public ResponseEntity<?> resetPassword(
+			@RequestBody @Valid TokenDto tokenDto
+	) {
+		return userService.resetPassword(tokenDto);
 	}
 }

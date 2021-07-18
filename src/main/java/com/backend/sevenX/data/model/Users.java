@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -45,6 +46,9 @@ public class Users extends Base{
     private String role;
 
     private String loginType;
+
+    private String forgotToken;
+    private LocalDateTime forgotTokenExpiryTime;
 
     //no need to save jwt
    // private String jwtToken;

@@ -20,8 +20,10 @@ public class Constant {
         String ENTER_REGISTERED_EMAIL = "Please Enter Registered Email";
         String PASSWORD_IS_WRONG = "Password is Wrong";
         String USER_NOT_FOUND = "User Not Found";
+        String TOKEN_EXPIRED = "URL is expired or is wrong. Please try again.";
         String UNAUTHORISED = "You are not authorised to access. Please Login again.";
         String TRY_OTHER_USERNAME = "Users with username already exist. Try other username";
+        String RESET_LINK_EMAIL_SENT = "We have sent you a reset password link on this mail. Please check your inbox.";
     }
 
     public interface EndPoints {
@@ -35,6 +37,8 @@ public class Constant {
         String ADDFAQ ="/faq/add";
         String FAQ ="/faq/{id}";
         String PROFILE = "/profile";
+        String FORGOT_PASSWORD = "/forgot-password";
+        String RESET_PASSWORD = "/reset-password";
     }
 
     public interface ImageFolders{
