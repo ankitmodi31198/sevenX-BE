@@ -34,6 +34,7 @@ public class Constant {
         String ALLFAQ ="/faq";
         String ADDFAQ ="/faq/add";
         String FAQ ="/faq/{id}";
+        String PROFILE = "/profile";
     }
 
     public interface ImageFolders{

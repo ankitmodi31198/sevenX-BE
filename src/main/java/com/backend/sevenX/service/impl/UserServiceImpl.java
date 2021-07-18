@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    private final ModelMapper mapper = new ModelMapper();
+    private final ModelMapper mapper = General.getStrictMapper();
 
     public ResponseEntity<?> login(LoginDto loginDto) {
         Users existUsers = usersRepo.findByUsername(loginDto.getUsername());
@@ -93,7 +93,9 @@ public class UserServiceImpl implements UserService {
         if (tempUsers == null) {
             Users users = mapper.map(signUpDto, Users.class);
             users.setRole(role);
-            users.setPassword(General.hashPassword(signUpDto.getPassword()));
+            if (signUpDto.getLoginType().equals(LoginTypeNormal)) {
+                users.setPassword(General.hashPassword(signUpDto.getPassword()));
+            }
             users = usersRepo.save(users);
             String jwt = jwtTokenUtil.generateToken(users.getUsername(), users.getId(), users.getRole());
             usersRepo.save(users);
@@ -154,6 +156,27 @@ public class UserServiceImpl implements UserService {
             System.out.println(e.getMessage());
             return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getProfileByUser(Integer id) {
+        try {
+            Users existingUser = usersRepo.findById(id).orElse(null);
+            if (existingUser != null) {
+                Type targetType = new TypeToken<SignUpDto>() {
+                }.getType();
+                SignUpDto userDto = mapper.map(existingUser, targetType);
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                    Constant.Messages.SUCCESS, userDto), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                    Constant.Messages.ERROR, "Invalid User"), HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

@@ -16,4 +16,6 @@ public interface UserService {
 
 	ResponseEntity<?> getFAQById(Integer id);
 
+	ResponseEntity<?> getProfileByUser(Integer id);
+
 }
