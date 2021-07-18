@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
             }
         } else {
 
-        	if(loginDto.getSocialId().equals(existUsers.getSocialId())
+        	if(loginDto.getSocialValue().equals(existUsers.getSocialValue())
 					&& loginDto.getLoginType() != null
 					&& loginDto.getLoginType().equals(existUsers.getLoginType())
 			) {
@@ -93,7 +93,9 @@ public class UserServiceImpl implements UserService {
         if (tempUsers == null) {
             Users users = mapper.map(signUpDto, Users.class);
             users.setRole(role);
-            users.setPassword(General.hashPassword(signUpDto.getPassword()));
+            if (signUpDto.getLoginType().equals(LoginTypeNormal)) {
+                users.setPassword(General.hashPassword(signUpDto.getPassword()));
+            }
             users = usersRepo.save(users);
             String jwt = jwtTokenUtil.generateToken(users.getUsername(), users.getId(), users.getRole());
             usersRepo.save(users);

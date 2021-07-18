@@ -12,7 +12,6 @@ public class SignUpDto {
     @NotNull
     private String username;
 
-    @NotNull
     private String password;
 
     private String firstName;
@@ -23,7 +22,7 @@ public class SignUpDto {
 
     private String address;
 
-    private String socialId;
+    private String socialValue;
 
     @NotNull
     private String loginType;
