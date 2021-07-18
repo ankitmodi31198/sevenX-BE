@@ -18,53 +18,62 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    @Autowired
-    private UserDetailsService userDetailsService;
 
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+	@Autowired
+	private UserDetailsService userDetailsService;
 
-    @Autowired
-    private UsersRepo usersRepo;
+	@Autowired
+	private JwtTokenUtil jwtTokenUtil;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
+	@Autowired
+	private UsersRepo usersRepo;
 
-        String jwt = req.getHeader(Constant.JwtConst.KEY_AUTHORIZATION);
-        String username = null;
+	@Override
+	protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
 
-        if (jwt != null) {
-            try {
-                username = jwtTokenUtil.getUsernameFromToken(jwt);
-                Users admin = usersRepo.findByUsername(username);
-                // User is guest Type
-                if (admin == null) {
-                    username = null;
-                }
+		String jwt = req.getHeader(Constant.JwtConst.KEY_AUTHORIZATION);
+		String username = null;
 
-            } catch (Exception e) {
-                logger.error("an error occured during getting username from token", e);
-            }
+		if (jwt != null) {
+			try {
+				username = jwtTokenUtil.getUsernameFromToken(jwt);
+				Integer userId = jwtTokenUtil.getUserIdFromToken(jwt);
+				if (Objects.nonNull(userId)) {
+					req.setAttribute("userId", userId);
+				}
+				Users admin = usersRepo.findByUsername(username);
+				// User is guest Type
+				if (admin == null) {
+					username = null;
+				}
 
-        } else {
-            logger.warn("couldn't find authorization string, will ignore the jwt");
-        }
+			} catch (Exception e) {
+				logger.error("an error occured during getting username from token", e);
+			}
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+		} else {
+			logger.warn("couldn't find authorization string, will ignore the jwt");
+		}
 
-            //validating jwt
-            if (jwtTokenUtil.validateToken(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN")));
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
-                logger.info("authenticated user " + username + ", setting security context");
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
-            //}
-        }
+		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+			UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-        chain.doFilter(req, res);
-    }
+			//validating jwt
+			if (jwtTokenUtil.validateToken(jwt, userDetails)) {
+				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+					userDetails,
+					null,
+					Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+				logger.info("authenticated user " + username + ", setting security context");
+				SecurityContextHolder.getContext().setAuthentication(authentication);
+			}
+			//}
+		}
+
+		chain.doFilter(req, res);
+	}
 }

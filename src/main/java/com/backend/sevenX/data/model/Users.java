@@ -32,7 +32,7 @@ public class Users extends Base{
 
     private String password;
 
-    private String socialValue;
+    private String socialId;
 
     private String firstName = "";
 

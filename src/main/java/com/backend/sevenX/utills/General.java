@@ -1,5 +1,7 @@
 package com.backend.sevenX.utills;
 
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.*;
@@ -59,4 +61,11 @@ public class General {
             return false;
         return pat.matcher(email).matches();
     }
+
+    public static ModelMapper getStrictMapper() {
+        ModelMapper strictMapper = new ModelMapper();
+        strictMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        return strictMapper;
+    }
+
 }

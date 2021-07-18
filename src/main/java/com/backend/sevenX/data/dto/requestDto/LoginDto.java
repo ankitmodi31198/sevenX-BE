@@ -14,7 +14,7 @@ public class LoginDto {
 
     private String password;
 
-    private String socialValue;
+    private String socialId;
 
     @NotNull
     private String loginType;
