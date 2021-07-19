@@ -13,9 +13,11 @@ import com.backend.sevenX.exception.EntityNotFoundException;
 import com.backend.sevenX.repository.FaqRepo;
 import com.backend.sevenX.repository.UsersRepo;
 import com.backend.sevenX.security.JwtTokenUtil;
+import com.backend.sevenX.service.EmailService;
 import com.backend.sevenX.service.UserService;
 import com.backend.sevenX.utills.Constant;
 import com.backend.sevenX.utills.General;
+import com.backend.sevenX.utills.Mail;
 import org.apache.logging.log4j.util.Strings;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -29,6 +31,7 @@ import javax.persistence.PersistenceContext;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -44,6 +47,8 @@ public class UserServiceImpl implements UserService {
     private FaqRepo faqRepo;
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private EmailService emailService;
 
     public ResponseEntity<?> login(LoginDto loginDto) {
         Users existUsers = usersRepo.findByUsername(loginDto.getUsername());
@@ -225,7 +230,7 @@ public class UserServiceImpl implements UserService {
             users.setForgotTokenExpiryTime(now);
             usersRepo.save(users);
 
-            new Thread(() -> this.sendForgotPasswordEmail(users.getUsername(), token)).start();
+            new Thread(() -> this.sendForgotPasswordEmail(emailReqDto, token)).start();
         } else {
             throw new EntityNotFoundException(Constant.Messages.USER_NOT_FOUND);
         }
@@ -252,8 +257,19 @@ public class UserServiceImpl implements UserService {
                 Constant.Messages.SUCCESS, null), HttpStatus.OK);
     }
 
-    private void sendForgotPasswordEmail(String username, String token) {
+    private void sendForgotPasswordEmail(EmailReqDto emailReqDto, String token) {
         //send mail code here
+        Mail mail = new Mail();
+        mail.setFrom(Constant.Mail.SENDER);
+        mail.setTo(emailReqDto.getUsername());
+        mail.setSubject(Constant.Mail.FORGOT_PASSWORD_MAIL);
+
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("resetUrl", emailReqDto.getResetUrl() + "?token=" + token);
+
+        mail.setModel(data);
+
+        emailService.sendForgotPasswordMail(mail);
     }
 
 }

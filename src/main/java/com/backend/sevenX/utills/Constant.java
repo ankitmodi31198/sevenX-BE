@@ -57,6 +57,12 @@ public class Constant {
     public interface EntityField{
         String DELETED_AT = "deletedAt";
     }
+
+    public interface Mail {
+        String SENDER = "vgecit2020@gmail.com";
+
+        String FORGOT_PASSWORD_MAIL = "Forgot Password Mail";
+    }
 }
 
 
