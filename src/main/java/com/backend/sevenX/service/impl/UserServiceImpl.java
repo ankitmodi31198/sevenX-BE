@@ -1,15 +1,19 @@
 package com.backend.sevenX.service.impl;
 
 import com.backend.sevenX.config.CommonResponse;
+import com.backend.sevenX.data.dto.requestDto.ContactFormReqDto;
 import com.backend.sevenX.data.dto.requestDto.EmailReqDto;
 import com.backend.sevenX.data.dto.requestDto.LoginDto;
 import com.backend.sevenX.data.dto.requestDto.SignUpDto;
 import com.backend.sevenX.data.dto.requestDto.TokenDto;
+import com.backend.sevenX.data.dto.responseDto.ContactFormResDto;
 import com.backend.sevenX.data.dto.responseDto.FAQResDto;
 import com.backend.sevenX.data.dto.responseDto.LoginResponseDto;
+import com.backend.sevenX.data.model.ContactForm;
 import com.backend.sevenX.data.model.FAQ;
 import com.backend.sevenX.data.model.Users;
 import com.backend.sevenX.exception.EntityNotFoundException;
+import com.backend.sevenX.repository.ContactFormRepo;
 import com.backend.sevenX.repository.FaqRepo;
 import com.backend.sevenX.repository.UsersRepo;
 import com.backend.sevenX.security.JwtTokenUtil;
@@ -37,239 +41,270 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private static final String LOGIN_TYPE_NORMAL = "Normal";
-    private final ModelMapper mapper = General.getStrictMapper();
-    @PersistenceContext
-    public EntityManager entityManager;
-    @Autowired
-    private UsersRepo usersRepo;
-    @Autowired
-    private FaqRepo faqRepo;
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
-    @Autowired
-    private EmailService emailService;
+	private static final String LOGIN_TYPE_NORMAL = "Normal";
 
-    public ResponseEntity<?> login(LoginDto loginDto) {
-        Users existUsers = usersRepo.findByUsername(loginDto.getUsername());
-        if (existUsers == null) {
-            return new ResponseEntity<>(new CommonResponse().getResponse(
-                    HttpStatus.OK.value(),
-                    Constant.Messages.USER_NOT_FOUND, null), HttpStatus.NOT_FOUND);
-        }
+	private final ModelMapper mapper = General.getStrictMapper();
 
-        if (loginDto.getLoginType().equals(LOGIN_TYPE_NORMAL)) {
-            if (General.checkPassword(loginDto.getPassword(), existUsers.getPassword())) {
-                usersRepo.save(existUsers);
-                LoginResponseDto loginRes = mapper.map(existUsers, LoginResponseDto.class);
-                String jwt = jwtTokenUtil.generateToken(existUsers.getUsername(), existUsers.getId(), existUsers.getRole());
-                loginRes.setJwt(jwt);
-                return new ResponseEntity<>(new CommonResponse().getResponse(
-                        HttpStatus.OK.value(),
-                        Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.BAD_REQUEST.value(),
-                        Constant.Messages.PASSWORD_IS_WRONG, null), HttpStatus.BAD_REQUEST);
-            }
-        } else {
+	@PersistenceContext
+	public EntityManager entityManager;
 
-            if (loginDto.getSocialId().equals(existUsers.getSocialId())
-                    && loginDto.getLoginType() != null
-                    && loginDto.getLoginType().equals(existUsers.getLoginType())
-            ) {
-                String jwt = jwtTokenUtil.generateToken(existUsers.getUsername(), existUsers.getId(), existUsers.getRole());
-                LoginResponseDto loginRes = mapper.map(existUsers, LoginResponseDto.class);
-                loginRes.setJwt(jwt);
-                return new ResponseEntity<>(new CommonResponse().getResponse(
-                        HttpStatus.OK.value(),
-                        Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(new CommonResponse().getResponse(
-                        HttpStatus.OK.value(),
-                        Constant.Messages.USER_NOT_FOUND, null), HttpStatus.NOT_FOUND);
-            }
+	@Autowired
+	private UsersRepo usersRepo;
 
-        }
-    }
+	@Autowired
+	private FaqRepo faqRepo;
 
-    public ResponseEntity<?> signUp(SignUpDto signUpDto, String role) {
+	@Autowired
+	private JwtTokenUtil jwtTokenUtil;
 
-        Users tempUsers = usersRepo.findByUsername(signUpDto.getUsername());
-        if (tempUsers == null) {
-            Users users = mapper.map(signUpDto, Users.class);
-            users.setRole(role);
-            if (signUpDto.getLoginType().equals(LOGIN_TYPE_NORMAL)) {
-                users.setPassword(General.hashPassword(signUpDto.getPassword()));
-            }
-            users = usersRepo.save(users);
-            String jwt = jwtTokenUtil.generateToken(users.getUsername(), users.getId(), users.getRole());
-            usersRepo.save(users);
-            LoginResponseDto loginRes = mapper.map(users, LoginResponseDto.class);
-            loginRes.setJwt(jwt);
-            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
-                    Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.BAD_REQUEST.value(),
-                    Constant.Messages.TRY_OTHER_USERNAME, null), HttpStatus.BAD_REQUEST);
-        }
-    }
+	@Autowired
+	private EmailService emailService;
 
-    public ResponseEntity<?> logout(Integer userId) {
-        //no need to do anything will be managed only from front
+	@Autowired
+	private ContactFormRepo contactFormRepo;
+
+	public ResponseEntity<?> login(LoginDto loginDto) {
+		Users existUsers = usersRepo.findByUsername(loginDto.getUsername());
+		if (existUsers == null) {
+			return new ResponseEntity<>(new CommonResponse().getResponse(
+				HttpStatus.OK.value(),
+				Constant.Messages.USER_NOT_FOUND, null), HttpStatus.NOT_FOUND);
+		}
+
+		if (loginDto.getLoginType().equals(LOGIN_TYPE_NORMAL)) {
+			if (General.checkPassword(loginDto.getPassword(), existUsers.getPassword())) {
+				usersRepo.save(existUsers);
+				LoginResponseDto loginRes = mapper.map(existUsers, LoginResponseDto.class);
+				String jwt = jwtTokenUtil.generateToken(existUsers.getUsername(), existUsers.getId(), existUsers.getRole());
+				loginRes.setJwt(jwt);
+				return new ResponseEntity<>(new CommonResponse().getResponse(
+					HttpStatus.OK.value(),
+					Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.BAD_REQUEST.value(),
+					Constant.Messages.PASSWORD_IS_WRONG, null), HttpStatus.BAD_REQUEST);
+			}
+		} else {
+
+			if (loginDto.getSocialId().equals(existUsers.getSocialId())
+				&& loginDto.getLoginType() != null
+				&& loginDto.getLoginType().equals(existUsers.getLoginType())
+			) {
+				String jwt = jwtTokenUtil.generateToken(existUsers.getUsername(), existUsers.getId(), existUsers.getRole());
+				LoginResponseDto loginRes = mapper.map(existUsers, LoginResponseDto.class);
+				loginRes.setJwt(jwt);
+				return new ResponseEntity<>(new CommonResponse().getResponse(
+					HttpStatus.OK.value(),
+					Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(
+					HttpStatus.OK.value(),
+					Constant.Messages.USER_NOT_FOUND, null), HttpStatus.NOT_FOUND);
+			}
+
+		}
+	}
+
+	public ResponseEntity<?> signUp(SignUpDto signUpDto, String role) {
+
+		Users tempUsers = usersRepo.findByUsername(signUpDto.getUsername());
+		if (tempUsers == null) {
+			Users users = mapper.map(signUpDto, Users.class);
+			users.setRole(role);
+			if (signUpDto.getLoginType().equals(LOGIN_TYPE_NORMAL)) {
+				users.setPassword(General.hashPassword(signUpDto.getPassword()));
+			}
+			users = usersRepo.save(users);
+			String jwt = jwtTokenUtil.generateToken(users.getUsername(), users.getId(), users.getRole());
+			usersRepo.save(users);
+			LoginResponseDto loginRes = mapper.map(users, LoginResponseDto.class);
+			loginRes.setJwt(jwt);
+			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+				Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.BAD_REQUEST.value(),
+				Constant.Messages.TRY_OTHER_USERNAME, null), HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	public ResponseEntity<?> logout(Integer userId) {
+		//no need to do anything will be managed only from front
 		/*Users users = usersRepo.findById(userId).orElse(null);
 		if (users != null) {
 			usersRepo.save(users);
 		}*/
-        return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
-                Constant.Messages.SUCCESS, null), HttpStatus.OK);
-    }
+		return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+			Constant.Messages.SUCCESS, null), HttpStatus.OK);
+	}
 
-    public ResponseEntity<?> getAllFAQ() {
-        try {
-            List<FAQ> faqList = faqRepo.findAll();
-            if (faqList.size() > 0) {
-                Type targetListType = new TypeToken<List<FAQResDto>>() {
-                }.getType();
-                List<FAQResDto> faqDtoList = mapper.map(faqList, targetListType);
-                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
-                        Constant.Messages.SUCCESS, faqDtoList), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                        Constant.Messages.ERROR, new ArrayList<>()), HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	public ResponseEntity<?> getAllFAQ() {
+		try {
+			List<FAQ> faqList = faqRepo.findAll();
+			if (faqList.size() > 0) {
+				Type targetListType = new TypeToken<List<FAQResDto>>() {
 
-    public ResponseEntity<?> getFAQById(Integer id) {
-        try {
-            FAQ faq = faqRepo.findById(id).orElse(null);
-            if (faq != null) {
-                Type targetType = new TypeToken<FAQResDto>() {
-                }.getType();
-                FAQResDto faqResDto = mapper.map(faq, targetType);
-                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
-                        Constant.Messages.SUCCESS, faqResDto), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                        Constant.Messages.ERROR, "Invalid FAQ ID"), HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+				}.getType();
+				List<FAQResDto> faqDtoList = mapper.map(faqList, targetListType);
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+					Constant.Messages.SUCCESS, faqDtoList), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+					Constant.Messages.ERROR, new ArrayList<>()), HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+				Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-    @Override
-    public ResponseEntity<?> getProfileByUser(Integer id) {
-        try {
-            Users existingUser = usersRepo.findById(id).orElse(null);
-            if (existingUser != null) {
-                LoginResponseDto responseDto = mapper.map(existingUser, LoginResponseDto.class);
-                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
-                        Constant.Messages.SUCCESS, responseDto), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                        Constant.Messages.ERROR, "Invalid User"), HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	public ResponseEntity<?> getFAQById(Integer id) {
+		try {
+			FAQ faq = faqRepo.findById(id).orElse(null);
+			if (faq != null) {
+				Type targetType = new TypeToken<FAQResDto>() {
 
-    @Override
-    public ResponseEntity<?> editProfileByUser(Integer userId, SignUpDto signUpDto) {
-        Users users = usersRepo.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException(Constant.Messages.USER_NOT_FOUND));
+				}.getType();
+				FAQResDto faqResDto = mapper.map(faq, targetType);
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+					Constant.Messages.SUCCESS, faqResDto), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+					Constant.Messages.ERROR, "Invalid FAQ ID"), HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+				Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-        if (signUpDto.getPassword() != null && users.getLoginType().equals(LOGIN_TYPE_NORMAL)) {
-            users.setPassword(General.hashPassword(signUpDto.getPassword()));
-        }
+	@Override
+	public ResponseEntity<?> getProfileByUser(Integer id) {
+		try {
+			Users existingUser = usersRepo.findById(id).orElse(null);
+			if (existingUser != null) {
+				LoginResponseDto responseDto = mapper.map(existingUser, LoginResponseDto.class);
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+					Constant.Messages.SUCCESS, responseDto), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+					Constant.Messages.ERROR, "Invalid User"), HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+				Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-        if (Strings.isNotEmpty(signUpDto.getAddress())) {
-            users.setAddress(signUpDto.getAddress());
-        }
+	@Override
+	public ResponseEntity<?> editProfileByUser(Integer userId, SignUpDto signUpDto) {
+		Users users = usersRepo.findById(userId)
+			.orElseThrow(() -> new EntityNotFoundException(Constant.Messages.USER_NOT_FOUND));
 
-        if (Strings.isNotEmpty(signUpDto.getFirstName())) {
-            users.setFirstName(signUpDto.getFirstName());
-        }
+		if (signUpDto.getPassword() != null && users.getLoginType().equals(LOGIN_TYPE_NORMAL)) {
+			users.setPassword(General.hashPassword(signUpDto.getPassword()));
+		}
 
-        if (Strings.isNotEmpty(signUpDto.getPhoneNo())) {
-            users.setPhoneNo(signUpDto.getPhoneNo());
-        }
+		if (Strings.isNotEmpty(signUpDto.getAddress())) {
+			users.setAddress(signUpDto.getAddress());
+		}
 
-        if (Strings.isNotEmpty(signUpDto.getLastName())) {
-            users.setLastName(signUpDto.getLastName());
-        }
+		if (Strings.isNotEmpty(signUpDto.getFirstName())) {
+			users.setFirstName(signUpDto.getFirstName());
+		}
 
-        usersRepo.save(users);
+		if (Strings.isNotEmpty(signUpDto.getPhoneNo())) {
+			users.setPhoneNo(signUpDto.getPhoneNo());
+		}
 
-        LoginResponseDto loginRes = mapper.map(users, LoginResponseDto.class);
+		if (Strings.isNotEmpty(signUpDto.getLastName())) {
+			users.setLastName(signUpDto.getLastName());
+		}
 
-        return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
-                Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
-    }
+		usersRepo.save(users);
 
-    @Override
-    public ResponseEntity<?> forgotPassword(EmailReqDto emailReqDto) {
+		LoginResponseDto loginRes = mapper.map(users, LoginResponseDto.class);
 
-        Users users = usersRepo.findByUsername(emailReqDto.getUsername());
+		return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+			Constant.Messages.SUCCESS, loginRes), HttpStatus.OK);
+	}
 
-        if (users != null) {
+	@Override
+	public ResponseEntity<?> forgotPassword(EmailReqDto emailReqDto) {
 
-            String token = users.getId() + General.createRandomCode();
-            users.setForgotToken(token);
-            LocalDateTime now = LocalDateTime.now();
-            now = now.plusMinutes(10); // 10 minutes valid only
-            users.setForgotTokenExpiryTime(now);
-            usersRepo.save(users);
+		Users users = usersRepo.findByUsername(emailReqDto.getUsername());
 
-            new Thread(() -> this.sendForgotPasswordEmail(emailReqDto, token)).start();
-        } else {
-            throw new EntityNotFoundException(Constant.Messages.USER_NOT_FOUND);
-        }
+		if (users != null) {
 
-        return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
-                Constant.Messages.RESET_LINK_EMAIL_SENT, null), HttpStatus.OK);
-    }
+			String token = users.getId() + General.createRandomCode();
+			users.setForgotToken(token);
+			LocalDateTime now = LocalDateTime.now();
+			now = now.plusMinutes(10); // 10 minutes valid only
+			users.setForgotTokenExpiryTime(now);
+			usersRepo.save(users);
 
-    @Override
-    public ResponseEntity<?> resetPassword(TokenDto tokenDto) {
-        Users users = usersRepo.findByForgotToken(tokenDto.getToken())
-                .orElseThrow(() -> new EntityNotFoundException(Constant.Messages.TOKEN_EXPIRED));
+			new Thread(() -> this.sendForgotPasswordEmail(emailReqDto, token)).start();
+		} else {
+			throw new EntityNotFoundException(Constant.Messages.USER_NOT_FOUND);
+		}
 
-        if (users.getForgotTokenExpiryTime().isAfter(LocalDateTime.now())) {
-            if (users.getLoginType().equals(LOGIN_TYPE_NORMAL)) {
-                users.setPassword(General.hashPassword(tokenDto.getPassword()));
-            }
-            usersRepo.save(users);
-        } else {
-            throw new EntityNotFoundException(Constant.Messages.TOKEN_EXPIRED);
-        }
+		return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+			Constant.Messages.RESET_LINK_EMAIL_SENT, null), HttpStatus.OK);
+	}
 
-        return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
-                Constant.Messages.SUCCESS, null), HttpStatus.OK);
-    }
+	@Override
+	public ResponseEntity<?> resetPassword(TokenDto tokenDto) {
+		Users users = usersRepo.findByForgotToken(tokenDto.getToken())
+			.orElseThrow(() -> new EntityNotFoundException(Constant.Messages.TOKEN_EXPIRED));
 
-    private void sendForgotPasswordEmail(EmailReqDto emailReqDto, String token) {
-        //send mail code here
-        Mail mail = new Mail();
-        mail.setFrom(Constant.Mail.SENDER);
-        mail.setTo(emailReqDto.getUsername());
-        mail.setSubject(Constant.Mail.FORGOT_PASSWORD_MAIL);
+		if (users.getForgotTokenExpiryTime().isAfter(LocalDateTime.now())) {
+			if (users.getLoginType().equals(LOGIN_TYPE_NORMAL)) {
+				users.setPassword(General.hashPassword(tokenDto.getPassword()));
+			}
+			usersRepo.save(users);
+		} else {
+			throw new EntityNotFoundException(Constant.Messages.TOKEN_EXPIRED);
+		}
 
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("resetUrl", emailReqDto.getResetUrl() + "?token=" + token);
+		return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+			Constant.Messages.SUCCESS, null), HttpStatus.OK);
+	}
 
-        mail.setModel(data);
+	@Override public ResponseEntity<?> saveContactForm(ContactFormReqDto contactFormReqDto) {
+		try {
+			ContactForm contactForm = mapper.map(contactFormReqDto, ContactForm.class);
+			if (contactForm != null) {
+				contactForm = contactFormRepo.save(contactForm);
+				ContactFormResDto contactFormResDto = mapper.map(contactForm, ContactFormResDto.class);
+				return new ResponseEntity<>(new CommonResponse().getResponse(
+					HttpStatus.OK.value(),
+					Constant.Messages.SUCCESS, contactFormResDto), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+					Constant.Messages.ERROR, "Not saved , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+				Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-        emailService.sendForgotPasswordMail(mail);
-    }
+	private void sendForgotPasswordEmail(EmailReqDto emailReqDto, String token) {
+		//send mail code here
+		Mail mail = new Mail();
+		mail.setFrom(Constant.Mail.SENDER);
+		mail.setTo(emailReqDto.getUsername());
+		mail.setSubject(Constant.Mail.FORGOT_PASSWORD_MAIL);
+
+		HashMap<String, Object> data = new HashMap<>();
+		data.put("resetUrl", emailReqDto.getResetUrl() + "?token=" + token);
+
+		mail.setModel(data);
+
+		emailService.sendForgotPasswordMail(mail);
+	}
 
 }

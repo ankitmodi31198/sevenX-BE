@@ -7,8 +7,8 @@ plugins {
 
 group = 'com.backend'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
-targetCompatibility = 1.8
+sourceCompatibility = '11'
+targetCompatibility = 11
 
 
 repositories {
@@ -30,7 +30,6 @@ dependencies {
 	implementation group: 'org.apache.maven', name: 'maven-model', version: '2.2.0'
 	implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.4.3'
 	implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core'
-	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	runtimeOnly 'mysql:mysql-connector-java'
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	compileOnly 'org.projectlombok:lombok:1.18.20'

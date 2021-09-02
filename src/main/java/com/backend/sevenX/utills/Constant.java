@@ -39,10 +39,12 @@ public class Constant {
         String PROFILE = "/profile";
         String FORGOT_PASSWORD = "/forgot-password";
         String RESET_PASSWORD = "/reset-password";
+        String DOCUMENT_UPLOAD = "/document-upload";
+        String CONTACT_FORM = "/contact-form";
     }
 
     public interface ImageFolders{
-        String Images = "Images";
+        String Documents = "Documents";
     }
 
     public interface JwtConst{

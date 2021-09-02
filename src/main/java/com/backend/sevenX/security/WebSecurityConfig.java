@@ -94,7 +94,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         list.add(Constant.EndPoints.LOGIN);
         list.add(Constant.EndPoints.FORGOT_PASSWORD);
         list.add(Constant.EndPoints.RESET_PASSWORD);
-        list.add(Constant.ImageFolders.Images);
+        list.add(Constant.ImageFolders.Documents);
         list.add("/image");
         return list.toArray(new String[list.size()]);
     }

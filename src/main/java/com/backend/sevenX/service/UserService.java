@@ -1,5 +1,6 @@
 package com.backend.sevenX.service;
 
+import com.backend.sevenX.data.dto.requestDto.ContactFormReqDto;
 import com.backend.sevenX.data.dto.requestDto.EmailReqDto;
 import com.backend.sevenX.data.dto.requestDto.LoginDto;
 import com.backend.sevenX.data.dto.requestDto.SignUpDto;
@@ -25,4 +26,6 @@ public interface UserService {
 	ResponseEntity<?> forgotPassword(EmailReqDto emailReqDto);
 
 	ResponseEntity<?> resetPassword(TokenDto tokenDto);
+
+	ResponseEntity<?> saveContactForm(ContactFormReqDto contactFormReqDto);
 }

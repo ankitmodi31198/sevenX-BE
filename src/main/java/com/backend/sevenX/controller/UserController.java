@@ -1,20 +1,28 @@
 package com.backend.sevenX.controller;
 
 import com.backend.sevenX.config.CommonResponse;
+import com.backend.sevenX.data.dto.requestDto.ContactFormReqDto;
 import com.backend.sevenX.data.dto.requestDto.EmailReqDto;
 import com.backend.sevenX.data.dto.requestDto.LoginDto;
 import com.backend.sevenX.data.dto.requestDto.SignUpDto;
 import com.backend.sevenX.data.dto.requestDto.TokenDto;
+import com.backend.sevenX.data.model.Document;
 import com.backend.sevenX.security.JwtTokenUtil;
+import com.backend.sevenX.service.ImageService;
 import com.backend.sevenX.service.UserService;
 import com.backend.sevenX.utills.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.awt.*;
+import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +35,9 @@ public class UserController {
 
 	@Autowired
 	JwtTokenUtil jwtTokenUtil;
+
+	@Autowired
+	private ImageService imageService;
 
 	@GetMapping("/hello-world")
 	public Map helloWorld(){
@@ -102,5 +113,34 @@ public class UserController {
 			@RequestBody @Valid TokenDto tokenDto
 	) {
 		return userService.resetPassword(tokenDto);
+	}
+
+	@PostMapping(Constant.EndPoints.DOCUMENT_UPLOAD)
+	public ResponseEntity<?> addNews(@RequestParam(value = "document") MultipartFile document,
+									 @RequestParam(value = "document_title", required = false) String documentTitle,
+									 @RequestParam(value = "document_for", required = false) String documentFor,
+									@RequestAttribute("userId") Integer userId) throws ParseException {
+
+		if (document != null) {
+			try {
+				String documentPath = imageService.storeUploadedFile(document);
+				Document documentObj = new Document();
+				documentObj.setDocumentURL(documentPath);
+				documentObj.setDocumentTitle(documentTitle);
+				documentObj.setDocumentFor(documentFor);
+				documentObj.setUserId(userId);
+				return imageService.saveDocumentByUserId(documentObj);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				return new ResponseEntity<>("Error Occured in saving documents", HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}else{
+			return new ResponseEntity<>("document is not found", HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@PostMapping(Constant.EndPoints.CONTACT_FORM)
+	public ResponseEntity<?> saveContactForm(@RequestBody @Valid ContactFormReqDto contactFormReqDto) throws Exception {
+		return userService.saveContactForm(contactFormReqDto);
 	}
 }
