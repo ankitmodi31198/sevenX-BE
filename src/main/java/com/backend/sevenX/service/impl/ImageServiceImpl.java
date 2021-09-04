@@ -54,8 +54,7 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	public String getImageUrl(String fileName){
-		String currentDirectory = System.getProperty("user.dir") ;
-		String path = currentDirectory.concat("/").concat(Constant.ImageFolders.Documents + "/" + fileName);
+		String path = "https://7xstartup.in/sevenX/documents?name="+ fileName;
 		return path;
 	}
 

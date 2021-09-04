@@ -143,4 +143,14 @@ public class UserController {
 	public ResponseEntity<?> saveContactForm(@RequestBody @Valid ContactFormReqDto contactFormReqDto) throws Exception {
 		return userService.saveContactForm(contactFormReqDto);
 	}
+
+	@GetMapping(Constant.EndPoints.Documents)
+	public ResponseEntity<?> getImage(@RequestParam String name) {
+		try {
+			return imageService.getImage(name);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return null;
+		}
+	}
 }

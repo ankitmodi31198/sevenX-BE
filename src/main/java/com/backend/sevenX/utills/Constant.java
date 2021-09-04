@@ -41,6 +41,7 @@ public class Constant {
         String RESET_PASSWORD = "/reset-password";
         String DOCUMENT_UPLOAD = "/document-upload";
         String CONTACT_FORM = "/contact-form";
+        String Documents = "/documents";
     }
 
     public interface ImageFolders{
