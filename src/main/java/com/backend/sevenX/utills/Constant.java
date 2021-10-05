@@ -42,6 +42,9 @@ public class Constant {
         String DOCUMENT_UPLOAD = "/document-upload";
         String CONTACT_FORM = "/contact-form";
         String Documents = "/documents";
+        String PACKAGES = "/packages";
+        String CART = "/addCart";
+        String CARTDETAILS = "/cartDetails";
     }
 
     public interface ImageFolders{

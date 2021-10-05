@@ -1,12 +1,9 @@
 package com.backend.sevenX.controller;
 
 import com.backend.sevenX.config.CommonResponse;
-import com.backend.sevenX.data.dto.requestDto.ContactFormReqDto;
-import com.backend.sevenX.data.dto.requestDto.EmailReqDto;
-import com.backend.sevenX.data.dto.requestDto.LoginDto;
-import com.backend.sevenX.data.dto.requestDto.SignUpDto;
-import com.backend.sevenX.data.dto.requestDto.TokenDto;
+import com.backend.sevenX.data.dto.requestDto.*;
 import com.backend.sevenX.data.model.Document;
+import com.backend.sevenX.data.model.Packages;
 import com.backend.sevenX.security.JwtTokenUtil;
 import com.backend.sevenX.service.ImageService;
 import com.backend.sevenX.service.UserService;
@@ -152,5 +149,25 @@ public class UserController {
 			System.out.println(e.getMessage());
 			return null;
 		}
+	}
+
+	@PostMapping(Constant.EndPoints.PACKAGES)
+	public ResponseEntity<?> savePackagesDetails(@RequestBody PackagesReqDto packagesReqDto) throws Exception {
+		return userService.savePackagesDetails(packagesReqDto);
+	}
+
+	@GetMapping(Constant.EndPoints.PACKAGES)
+	public ResponseEntity<?> getAllPackagesByScreenName(@RequestAttribute("screenName") String screenName) throws Exception {
+		return userService.getAllPackagesByScreenName(screenName);
+	}
+
+	@PostMapping(Constant.EndPoints.CART)
+	public ResponseEntity<?> addToCart(@RequestAttribute("userId") Integer userId, @RequestBody  CartDetailsReqDto cartDetailsReqDto) throws Exception {
+		return userService.saveCartDetails(cartDetailsReqDto, userId);
+	}
+
+	@GetMapping(Constant.EndPoints.CARTDETAILS)
+	public ResponseEntity<?> getCartDetailsByUserId( @RequestAttribute("userId") Integer userId) throws Exception {
+		return userService.getCartDetailsByUserId(userId);
 	}
 }

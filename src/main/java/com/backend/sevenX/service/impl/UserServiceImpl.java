@@ -1,21 +1,11 @@
 package com.backend.sevenX.service.impl;
 
 import com.backend.sevenX.config.CommonResponse;
-import com.backend.sevenX.data.dto.requestDto.ContactFormReqDto;
-import com.backend.sevenX.data.dto.requestDto.EmailReqDto;
-import com.backend.sevenX.data.dto.requestDto.LoginDto;
-import com.backend.sevenX.data.dto.requestDto.SignUpDto;
-import com.backend.sevenX.data.dto.requestDto.TokenDto;
-import com.backend.sevenX.data.dto.responseDto.ContactFormResDto;
-import com.backend.sevenX.data.dto.responseDto.FAQResDto;
-import com.backend.sevenX.data.dto.responseDto.LoginResponseDto;
-import com.backend.sevenX.data.model.ContactForm;
-import com.backend.sevenX.data.model.FAQ;
-import com.backend.sevenX.data.model.Users;
+import com.backend.sevenX.data.dto.requestDto.*;
+import com.backend.sevenX.data.dto.responseDto.*;
+import com.backend.sevenX.data.model.*;
 import com.backend.sevenX.exception.EntityNotFoundException;
-import com.backend.sevenX.repository.ContactFormRepo;
-import com.backend.sevenX.repository.FaqRepo;
-import com.backend.sevenX.repository.UsersRepo;
+import com.backend.sevenX.repository.*;
 import com.backend.sevenX.security.JwtTokenUtil;
 import com.backend.sevenX.service.EmailService;
 import com.backend.sevenX.service.UserService;
@@ -37,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -53,6 +44,12 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private FaqRepo faqRepo;
+
+	@Autowired
+	private PackagesRepo packagesRepo;
+
+	@Autowired
+	private AddCartDetailsRepo addCartDetailsRepo;
 
 	@Autowired
 	private JwtTokenUtil jwtTokenUtil;
@@ -289,6 +286,106 @@ public class UserServiceImpl implements UserService {
 			System.out.println(e.getMessage());
 			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
 				Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public ResponseEntity<?> savePackagesDetails(PackagesReqDto packagesReqDto) {
+		try {
+			Packages packages = mapper.map(packagesReqDto, Packages.class);
+			if (packages != null) {
+				packages = packagesRepo.save(packages);
+				PackagesResDto packagesResDto = mapper.map(packages, PackagesResDto.class);
+				return new ResponseEntity<>(new CommonResponse().getResponse(
+						HttpStatus.OK.value(),
+						Constant.Messages.SUCCESS, packagesResDto), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+						Constant.Messages.ERROR, "Not saved , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public ResponseEntity<?> getAllPackagesByScreenName(String screenName) {
+		try {
+			List<Packages> packagesList = packagesRepo.findByScreenName(screenName);
+			if (Objects.nonNull(packagesList) && packagesList.size() > 0) {
+				Type targetType = new TypeToken<PackagesResDto>() {
+
+				}.getType();
+				PackagesResDto packagesResDto = mapper.map(packagesList, targetType);
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+						Constant.Messages.SUCCESS, packagesResDto), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+						Constant.Messages.ERROR, "Invalid Screen Name"), HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public ResponseEntity<?> saveCartDetails(CartDetailsReqDto cartDetailsReqDto, Integer userId) {
+		try {
+			CartDetails cartDetails = mapper.map(cartDetailsReqDto, CartDetails.class);
+			cartDetails.setUserId(userId);
+			if (cartDetails != null) {
+				Double totalAmount = 0.0;
+				if(Objects.nonNull(cartDetails.getPackagesList()) && cartDetails.getPackagesList().size() > 0) {
+					Double subTotal = 0.0;
+					for (Packages packages : cartDetails.getPackagesList()) {
+						subTotal = subTotal + packages.getAmount();
+					}
+					totalAmount = subTotal + cartDetails.getGstAmount();
+				}
+				if(cartDetails.getOrderTotal().equals(totalAmount)){
+					cartDetails = addCartDetailsRepo.save(cartDetails);
+				} else {
+					return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+							Constant.Messages.ERROR, "Total is not same"), HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+				CartDetailsResDto cartDetailsResDto = mapper.map(cartDetails, CartDetailsResDto.class);
+				return new ResponseEntity<>(new CommonResponse().getResponse(
+						HttpStatus.OK.value(),
+						Constant.Messages.SUCCESS, cartDetailsResDto), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+						Constant.Messages.ERROR, "Not saved , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public ResponseEntity<?> getCartDetailsByUserId(Integer userId) {
+		try {
+			List<CartDetails> cartDetailsList = addCartDetailsRepo.findByUserId(userId);
+			if (Objects.nonNull(cartDetailsList) && cartDetailsList.size() > 0) {
+				Type targetType = new TypeToken<CartDetailsResDto>() {
+
+				}.getType();
+				CartDetailsResDto cartDetailsResDto = mapper.map(cartDetailsList, targetType);
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+						Constant.Messages.SUCCESS, cartDetailsResDto), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+						Constant.Messages.ERROR, "Invalid UserId"), HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

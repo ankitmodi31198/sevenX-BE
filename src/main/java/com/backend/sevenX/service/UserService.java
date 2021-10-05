@@ -1,11 +1,9 @@
 package com.backend.sevenX.service;
 
-import com.backend.sevenX.data.dto.requestDto.ContactFormReqDto;
-import com.backend.sevenX.data.dto.requestDto.EmailReqDto;
-import com.backend.sevenX.data.dto.requestDto.LoginDto;
-import com.backend.sevenX.data.dto.requestDto.SignUpDto;
-import com.backend.sevenX.data.dto.requestDto.TokenDto;
+import com.backend.sevenX.data.dto.requestDto.*;
 import org.springframework.http.ResponseEntity;
+
+import javax.persistence.criteria.CriteriaBuilder;
 
 public interface UserService {
 
@@ -28,4 +26,12 @@ public interface UserService {
 	ResponseEntity<?> resetPassword(TokenDto tokenDto);
 
 	ResponseEntity<?> saveContactForm(ContactFormReqDto contactFormReqDto);
+
+	ResponseEntity<?> savePackagesDetails(PackagesReqDto packagesReqDto);
+
+	ResponseEntity<?> getAllPackagesByScreenName(String screenName);
+
+	ResponseEntity<?> saveCartDetails(CartDetailsReqDto cartDetailsReqDto, Integer userId);
+
+	ResponseEntity<?> getCartDetailsByUserId(Integer userId);
 }
