@@ -1,7 +1,6 @@
 package com.backend.sevenX.data.model;
 
 import com.backend.sevenX.utills.Constant;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
@@ -16,24 +15,19 @@ import javax.persistence.UniqueConstraint;
 @Getter
 @Setter
 @DynamicInsert
-@Table( name = "document",
-	uniqueConstraints = {
-		@UniqueConstraint(columnNames = {"documentURL", Constant.EntityField.DELETED_AT})
-		// hibernate bug of inheritance second parameter accepting as entity variable name
-	})
+@Table( name = "order_packages",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {Constant.EntityField.DELETED_AT})
+                // hibernate bug of inheritance second parameter accepting as entity variable name
+        })
 //soft delete condition
 @SQLDelete(sql =
-	"UPDATE document SET "+ Constant.DbField.DELETED_AT +"=now() " +
-		"WHERE id = ?")
+        "UPDATE order_packages SET "+ Constant.DbField.DELETED_AT +"=now() " +
+                "WHERE id = ?")
 @Where(clause = Constant.DbField.DELETED_AT +" IS NULL")
-public class Document extends Base{
+public class OrderPackages extends Base {
 
-	private String documentURL;
+    private Integer orderDetailsId;
 
-	private String documentTitle;
-
-	private String documentFor;
-
-	private Integer userId;
-
+    private Integer packageId;
 }

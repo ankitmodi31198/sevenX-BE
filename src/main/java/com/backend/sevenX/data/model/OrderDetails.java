@@ -7,33 +7,38 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
 @DynamicInsert
-@Table( name = "packages",
+@Table( name = "orderDetails",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {Constant.EntityField.DELETED_AT})
                 // hibernate bug of inheritance second parameter accepting as entity variable name
         })
 //soft delete condition
 @SQLDelete(sql =
-        "UPDATE packages SET "+ Constant.DbField.DELETED_AT +"=now() " +
+        "UPDATE orderDetails SET "+ Constant.DbField.DELETED_AT +"=now() " +
                 "WHERE id = ?")
 @Where(clause = Constant.DbField.DELETED_AT +" IS NULL")
-public class Packages extends Base{
+public class OrderDetails extends Base {
 
-    private String planName;
+    private Integer userId;
 
-    private String heading;
+    private Double subTotal;
 
-    private String description;
+    private Double gstAmount;
 
-    private String screenName;
+    private Double orderTotal;
 
-    private Double amount;
+    @OneToMany( cascade = CascadeType.ALL)
+    private List<OrderPackages> orderPackagesList;
+
+    @Lob
+    private String transactionId;
+
+    private String transactionStatus;
 }

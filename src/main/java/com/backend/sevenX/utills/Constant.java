@@ -43,8 +43,11 @@ public class Constant {
         String CONTACT_FORM = "/contact-form";
         String Documents = "/documents";
         String PACKAGES = "/packages";
+        String PACKAGESBYSCREENNAME = "/packages/{screenName}";
         String CART = "/addCart";
         String CARTDETAILS = "/cartDetails";
+        String SAVEORDER = "/saveOrder";
+        String ORDERDETAILS = "/orderDetails";
     }
 
     public interface ImageFolders{

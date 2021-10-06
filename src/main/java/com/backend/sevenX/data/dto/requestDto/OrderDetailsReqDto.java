@@ -1,6 +1,5 @@
 package com.backend.sevenX.data.dto.requestDto;
 
-import com.backend.sevenX.data.model.Packages;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class CartDetailsReqDto {
+public class OrderDetailsReqDto {
 
     private Double subTotal;
 
@@ -17,4 +16,8 @@ public class CartDetailsReqDto {
     private Double orderTotal;
 
     private List<Integer> packagesList;
+
+    private String transactionId;
+
+    private String transactionStatus;
 }

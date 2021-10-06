@@ -1,6 +1,7 @@
 package com.backend.sevenX.service;
 
 import com.backend.sevenX.data.dto.requestDto.*;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.http.ResponseEntity;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -31,7 +32,12 @@ public interface UserService {
 
 	ResponseEntity<?> getAllPackagesByScreenName(String screenName);
 
-	ResponseEntity<?> saveCartDetails(CartDetailsReqDto cartDetailsReqDto, Integer userId);
+	ResponseEntity<?> saveUpdateCartDetails(CartDetailsReqDto cartDetailsReqDto, Integer userId);
 
 	ResponseEntity<?> getCartDetailsByUserId(Integer userId);
+
+	ResponseEntity<?> saveOrders(OrderDetailsReqDto orderDetailsReqDto, Integer userId);
+
+	ResponseEntity<?> getOrderDetailsByUserId(Integer userId);
+
 }

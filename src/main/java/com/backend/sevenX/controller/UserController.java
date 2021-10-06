@@ -156,18 +156,28 @@ public class UserController {
 		return userService.savePackagesDetails(packagesReqDto);
 	}
 
-	@GetMapping(Constant.EndPoints.PACKAGES)
-	public ResponseEntity<?> getAllPackagesByScreenName(@RequestAttribute("screenName") String screenName) throws Exception {
+	@GetMapping(Constant.EndPoints.PACKAGESBYSCREENNAME)
+	public ResponseEntity<?> getAllPackagesByScreenName(@PathVariable("screenName") String screenName) throws Exception {
 		return userService.getAllPackagesByScreenName(screenName);
 	}
 
 	@PostMapping(Constant.EndPoints.CART)
 	public ResponseEntity<?> addToCart(@RequestAttribute("userId") Integer userId, @RequestBody  CartDetailsReqDto cartDetailsReqDto) throws Exception {
-		return userService.saveCartDetails(cartDetailsReqDto, userId);
+		return userService.saveUpdateCartDetails(cartDetailsReqDto, userId);
 	}
 
 	@GetMapping(Constant.EndPoints.CARTDETAILS)
 	public ResponseEntity<?> getCartDetailsByUserId( @RequestAttribute("userId") Integer userId) throws Exception {
 		return userService.getCartDetailsByUserId(userId);
+	}
+
+	@PostMapping(Constant.EndPoints.SAVEORDER)
+	public ResponseEntity<?> saveOrders(@RequestAttribute("userId") Integer userId, @RequestBody  OrderDetailsReqDto orderDetailsReqDto) throws Exception {
+		return userService.saveOrders(orderDetailsReqDto, userId);
+	}
+
+	@GetMapping(Constant.EndPoints.ORDERDETAILS)
+	public ResponseEntity<?> getOrderDetailsByUserId( @RequestAttribute("userId") Integer userId) throws Exception {
+		return userService.getOrderDetailsByUserId(userId);
 	}
 }

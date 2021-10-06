@@ -9,6 +9,8 @@ import javax.validation.constraints.NotNull;
 @Setter
 public class PackagesResDto {
 
+    private Integer id;
+
     @NotNull
     private String planName;
 

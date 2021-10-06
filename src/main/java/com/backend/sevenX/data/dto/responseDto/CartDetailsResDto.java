@@ -18,5 +18,5 @@ public class CartDetailsResDto {
 
     private Double orderTotal;
 
-    private List<Packages> packagesList;
+    private List<PackagesResDto> packagesList;
 }
