@@ -16,5 +16,7 @@ public class CartDetailsReqDto {
 
     private Double orderTotal;
 
+    private Double finalOrderTotal;
+
     private List<Integer> packagesList;
 }

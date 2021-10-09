@@ -34,6 +34,8 @@ public class CartDetails extends Base{
 
     private Double orderTotal;
 
+    private Double finalOrderTotal;
+
     @OneToMany( cascade = CascadeType.ALL)
     private List<CartPackages> cartPackagesList;
 }

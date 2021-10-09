@@ -23,4 +23,6 @@ public class PackagesResDto {
 
     private Double amount;
 
+    private Double finalAmount;
+
 }

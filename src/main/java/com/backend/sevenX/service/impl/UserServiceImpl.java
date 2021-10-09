@@ -347,7 +347,7 @@ public class UserServiceImpl implements UserService {
         try {
             List<CartPackages> cartPackagesList = new ArrayList<>();
             if (Objects.nonNull(cartDetailsReqDto)) {
-                Double totalAmount = 0.0;
+               // Double totalAmount = 0.0;
                 CartDetails cartDetails = mapper.map(cartDetailsReqDto, CartDetails.class);
                 if (Objects.nonNull(cartDetailsReqDto.getPackagesList()) && cartDetailsReqDto.getPackagesList().size() > 0) {
                     Double subTotal = 0.0;
@@ -359,8 +359,8 @@ public class UserServiceImpl implements UserService {
                         subTotal = subTotal + packages.getAmount();
                     }
                     cartDetails.setCartPackagesList(cartPackagesList);
-                    totalAmount = subTotal + cartDetailsReqDto.getGstAmount();
-                    if (totalAmount.equals(cartDetails.getOrderTotal())) {
+                  //  totalAmount = subTotal + cartDetailsReqDto.getGstAmount();
+                  //  if (totalAmount.equals(cartDetails.getOrderTotal())) {
                         cartDetails.setUserId(userId);
                         CartDetails existCartDetails = cartDetailsRepo.findByUserId(userId);
                         if (Objects.nonNull(existCartDetails)) {
@@ -376,10 +376,10 @@ public class UserServiceImpl implements UserService {
                         return new ResponseEntity<>(new CommonResponse().getResponse(
                                 HttpStatus.OK.value(),
                                 Constant.Messages.SUCCESS, cartDetails.getId()), HttpStatus.OK);
-                    } else {
-                        return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                                Constant.Messages.ERROR, "Total is not same"), HttpStatus.INTERNAL_SERVER_ERROR);
-                    }
+                   // } else {
+                    //    return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    //            Constant.Messages.ERROR, "Total is not same"), HttpStatus.INTERNAL_SERVER_ERROR);
+                  //  }
                 }
             } else {
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
@@ -429,7 +429,7 @@ public class UserServiceImpl implements UserService {
         try {
             List<OrderPackages> orderPackagesList = new ArrayList<>();
             if (Objects.nonNull(orderDetailsReqDto)) {
-                Double totalAmount = 0.0;
+            //    Double totalAmount = 0.0;
                 OrderDetails orderDetails = mapper.map(orderDetailsReqDto, OrderDetails.class);
                 if (Objects.nonNull(orderDetailsReqDto.getPackagesList()) && orderDetailsReqDto.getPackagesList().size() > 0) {
                     Double subTotal = 0.0;
@@ -441,8 +441,8 @@ public class UserServiceImpl implements UserService {
                         subTotal = subTotal + packages.getAmount();
                     }
                     orderDetails.setOrderPackagesList(orderPackagesList);
-                    totalAmount = subTotal + orderDetailsReqDto.getGstAmount();
-                    if (totalAmount.equals(orderDetails.getOrderTotal())) {
+               //     totalAmount = subTotal + orderDetailsReqDto.getGstAmount();
+                //    if (totalAmount.equals(orderDetails.getOrderTotal())) {
                         orderDetails.setUserId(userId);
                       /*  CartDetails existCartDetails = cartDetailsRepo.findByUserId(userId);
                         if (Objects.nonNull(existCartDetails)) {
@@ -458,10 +458,10 @@ public class UserServiceImpl implements UserService {
                         return new ResponseEntity<>(new CommonResponse().getResponse(
                                 HttpStatus.OK.value(),
                                 Constant.Messages.SUCCESS, orderDetails.getId()), HttpStatus.OK);
-                    } else {
-                        return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                                Constant.Messages.ERROR, "Total is not same"), HttpStatus.INTERNAL_SERVER_ERROR);
-                    }
+                 //   } else {
+                 //       return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                 //               Constant.Messages.ERROR, "Total is not same"), HttpStatus.INTERNAL_SERVER_ERROR);
+                 //   }
                 }
             } else {
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
