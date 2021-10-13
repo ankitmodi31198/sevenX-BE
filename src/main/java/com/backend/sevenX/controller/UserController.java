@@ -113,10 +113,11 @@ public class UserController {
 	}
 
 	@PostMapping(Constant.EndPoints.DOCUMENT_UPLOAD)
-	public ResponseEntity<?> addNews(@RequestParam(value = "document") MultipartFile document,
-									 @RequestParam(value = "document_title", required = false) String documentTitle,
-									 @RequestParam(value = "document_for", required = false) String documentFor,
-									@RequestAttribute("userId") Integer userId) throws ParseException {
+	public ResponseEntity<?> addDocuments(@RequestParam(value = "document") MultipartFile document,
+									 @RequestParam(value = "documentTitle", required = false) String documentTitle,
+									 @RequestParam(value = "documentFor", required = false) String documentFor,
+									@RequestParam(value = "screenName", required = false) String screenName,
+									 @RequestAttribute("userId") Integer userId) throws ParseException {
 
 		if (document != null) {
 			try {
@@ -125,6 +126,7 @@ public class UserController {
 				documentObj.setDocumentURL(documentPath);
 				documentObj.setDocumentTitle(documentTitle);
 				documentObj.setDocumentFor(documentFor);
+				documentObj.setScreenName(screenName);
 				documentObj.setUserId(userId);
 				return imageService.saveDocumentByUserId(documentObj);
 			} catch (Exception e) {
@@ -145,6 +147,16 @@ public class UserController {
 	public ResponseEntity<?> getImage(@RequestParam String name) {
 		try {
 			return imageService.getImage(name);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return null;
+		}
+	}
+
+	@GetMapping(Constant.EndPoints.DocumentsBYUSER)
+	public ResponseEntity<?> getDocumentByUserId(@RequestAttribute("userId") Integer userId) {
+		try {
+			return imageService.getDocumentByUserId(userId);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			return null;

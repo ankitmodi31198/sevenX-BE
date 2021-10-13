@@ -2,13 +2,16 @@ package com.backend.sevenX.service.impl;
 
 import com.backend.sevenX.config.CommonResponse;
 import com.backend.sevenX.data.dto.responseDto.DocumentResDto;
+import com.backend.sevenX.data.dto.responseDto.FAQResDto;
 import com.backend.sevenX.data.dto.responseDto.LoginResponseDto;
 import com.backend.sevenX.data.model.Document;
+import com.backend.sevenX.data.model.FAQ;
 import com.backend.sevenX.data.model.Users;
 import com.backend.sevenX.repository.DocumentRepo;
 import com.backend.sevenX.service.ImageService;
 import com.backend.sevenX.utills.Constant;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,9 +22,12 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.activation.FileTypeMap;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -92,6 +98,27 @@ public class ImageServiceImpl implements ImageService {
 		}
 	}
 
+	@Override
+	public ResponseEntity<?> getDocumentByUserId(Integer userId) {
+		try {
+			List<Document> documentList = documentRepo.findByUserId(userId);
+			if (documentList.size() > 0) {
+				Type targetListType = new TypeToken<List<DocumentResDto>>() {
+
+				}.getType();
+				List<DocumentResDto> documentResDtoList = mapper.map(documentList, targetListType);
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+					Constant.Messages.SUCCESS, documentResDtoList), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+					Constant.Messages.ERROR, new ArrayList<>()), HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+				Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 }
 

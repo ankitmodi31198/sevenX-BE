@@ -16,4 +16,6 @@ public interface ImageService {
 
 	ResponseEntity<?> saveDocumentByUserId(Document document);
 
+	ResponseEntity<?> getDocumentByUserId(Integer userId);
+
 }

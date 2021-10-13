@@ -18,4 +18,6 @@ public class DocumentResDto {
 
 	private Integer userId;
 
+	private String screenName;
+
 }

@@ -36,4 +36,6 @@ public class Document extends Base{
 
 	private Integer userId;
 
+	private String screenName;
+
 }
