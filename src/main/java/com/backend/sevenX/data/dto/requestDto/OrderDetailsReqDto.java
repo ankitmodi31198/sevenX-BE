@@ -9,13 +9,15 @@ import java.util.List;
 @Setter
 public class OrderDetailsReqDto {
 
-    private Double subTotal;
+    private Integer orderId;
 
-    private Double gstAmount;
+    private Double finalOrderTotalAmount;
 
-    private Double orderTotal;
+    private String note;
 
-    private List<Integer> packagesList;
+    private List<OrderPackageReqDto> orderPackageList;
+
+    private Double additionalCost;
 
     private String transactionId;
 

@@ -5,13 +5,7 @@ import com.backend.sevenX.service.AdminService;
 import com.backend.sevenX.utills.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
@@ -33,6 +27,11 @@ public class AdminController {
 	@DeleteMapping(Constant.EndPoints.FAQ)
 	public ResponseEntity<?> deleteFAQById(@PathVariable(required = true) Integer id) {
 		return adminService.deleteFAQById(id);
+	}
+
+	@GetMapping(Constant.EndPoints.CONTACT_FORM)
+	public ResponseEntity<?> getAllContactFormDetails() throws Exception {
+		return adminService.getAllContactFormDetails();
 	}
 
 }

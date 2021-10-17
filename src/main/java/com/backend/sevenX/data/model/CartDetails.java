@@ -30,11 +30,9 @@ public class CartDetails extends Base{
 
     private Double subTotal;
 
-    private Double gstAmount;
+   // private Double gstAmount;
 
     private Double orderTotal;
-
-    private Double finalOrderTotal;
 
     @OneToMany( cascade = CascadeType.ALL)
     private List<CartPackages> cartPackagesList;

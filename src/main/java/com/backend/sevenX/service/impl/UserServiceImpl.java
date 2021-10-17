@@ -24,10 +24,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -343,44 +342,69 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public ResponseEntity<?> getAllPackagesByScreenNameList(PackagesListReqDto packagesListReqDto) {
+        try {
+            List<Packages> packagesList = packagesRepo.findByScreenNameList(packagesListReqDto.getScreenNameList());
+            if (Objects.nonNull(packagesList) && packagesList.size() > 0) {
+                Type targetListType = new TypeToken<List<PackagesResDto>>() {
+
+                }.getType();
+                List<PackagesResDto> packagesResDtoList = mapper.map(packagesList, targetListType);
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, packagesResDtoList), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.ERROR, "Invalid Screen Name"), HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
     public ResponseEntity<?> saveUpdateCartDetails(CartDetailsReqDto cartDetailsReqDto, Integer userId) {
         try {
             List<CartPackages> cartPackagesList = new ArrayList<>();
-            if (Objects.nonNull(cartDetailsReqDto)) {
-               // Double totalAmount = 0.0;
-                CartDetails cartDetails = mapper.map(cartDetailsReqDto, CartDetails.class);
-                if (Objects.nonNull(cartDetailsReqDto.getPackagesList()) && cartDetailsReqDto.getPackagesList().size() > 0) {
-                    Double subTotal = 0.0;
-                    for (Integer packagesId : cartDetailsReqDto.getPackagesList()) {
-                        CartPackages cartPackages = new CartPackages();
-                        cartPackages.setPackageId(packagesId);
-                        cartPackagesList.add(cartPackages);
-                        Packages packages = packagesRepo.findById(packagesId).orElse(null);
-                        subTotal = subTotal + packages.getAmount();
-                    }
-                    cartDetails.setCartPackagesList(cartPackagesList);
-                  //  totalAmount = subTotal + cartDetailsReqDto.getGstAmount();
-                  //  if (totalAmount.equals(cartDetails.getOrderTotal())) {
-                        cartDetails.setUserId(userId);
-                        CartDetails existCartDetails = cartDetailsRepo.findByUserId(userId);
-                        if (Objects.nonNull(existCartDetails)) {
-                            cartDetailsRepo.deleteById(existCartDetails.getId());
-                            cartPackagesRepo.deleteByCartDetailsId(existCartDetails.getId());
-                        }
+            CartDetails existCartDetails = cartDetailsRepo.findByUserId(userId);
+            CartDetails cartDetails = new CartDetails();
+            if (Objects.nonNull(cartDetailsReqDto) && Objects.nonNull(cartDetailsReqDto.getPackageId())) {
+                CartPackages cartPackages = new CartPackages();
+                if (Objects.nonNull(existCartDetails)) {
+                    CartPackages existPackage = cartPackagesRepo.findByCartDetailsIdAndPackageId(existCartDetails.getId(), cartDetailsReqDto.getPackageId());
+                    if (existPackage != null) {
+                        cartPackages = existPackage;
+                        cartPackages.setCartDetailsId(null);
+                        cartPackages.setQty(existPackage.getQty() + 1);
+                        cartPackages.setCartDetailsId(existCartDetails.getId());
+                        cartPackagesRepo.save(cartPackages);
+                        cartDetails = existCartDetails;
                         cartDetails = cartDetailsRepo.save(cartDetails);
-                        CartDetails finalCartDetails = cartDetails;
-                        cartPackagesList.stream().forEach(c -> {
-                            c.setCartDetailsId(finalCartDetails.getId());
-                            cartPackagesRepo.save(c);
-                        });
-                        return new ResponseEntity<>(new CommonResponse().getResponse(
-                                HttpStatus.OK.value(),
-                                Constant.Messages.SUCCESS, cartDetails.getId()), HttpStatus.OK);
-                   // } else {
-                    //    return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    //            Constant.Messages.ERROR, "Total is not same"), HttpStatus.INTERNAL_SERVER_ERROR);
-                  //  }
+                    } else {
+                        cartDetails = existCartDetails;
+                        cartPackages.setPackageId(cartDetailsReqDto.getPackageId());
+                        cartPackages.setCartDetailsId(existCartDetails.getId());
+                        cartPackagesList.add(cartPackages);
+                        cartDetails.getCartPackagesList().add(cartPackages);
+                        cartDetails.setCartPackagesList(cartDetails.getCartPackagesList());
+                        cartDetails = cartDetailsRepo.save(cartDetails);
+                    }
+                } else {
+                    cartPackages.setPackageId(cartDetailsReqDto.getPackageId());
+                    cartPackagesList.add(cartPackages);
+                    cartDetails.setCartPackagesList(cartPackagesList);
+                    cartDetails.setUserId(userId);
+                    cartDetails = cartDetailsRepo.save(cartDetails);
+                    CartDetails finalCartDetails = cartDetails;
+                    cartPackagesList.stream().forEach(c -> {
+                        c.setCartDetailsId(finalCartDetails.getId());
+                        cartPackagesRepo.save(c);
+                    });
                 }
+                return new ResponseEntity<>(new CommonResponse().getResponse(
+                        HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, cartDetails.getId()), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
                         Constant.Messages.ERROR, "Not saved , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -390,8 +414,6 @@ public class UserServiceImpl implements UserService {
             return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                Constant.Messages.ERROR, "Not saved , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -399,15 +421,17 @@ public class UserServiceImpl implements UserService {
         try {
             CartDetails existingCartDetails = cartDetailsRepo.findByUserId(userId);
             if (existingCartDetails != null) {
+                CartDetails cartDetails = reCalculateOrderTotal(userId);
                 CartDetailsResDto cartDetailsResDto = new CartDetailsResDto();
-                cartDetailsResDto.setGstAmount(existingCartDetails.getGstAmount());
-                cartDetailsResDto.setOrderTotal(existingCartDetails.getOrderTotal());
-                cartDetailsResDto.setUserId(existingCartDetails.getUserId());
-                cartDetailsResDto.setSubTotal(existingCartDetails.getSubTotal());
+               // cartDetailsResDto.setGstAmount(cartDetails.getGstAmount());
+                cartDetailsResDto.setOrderTotal(cartDetails.getOrderTotal());
+                cartDetailsResDto.setUserId(cartDetails.getUserId());
+                cartDetailsResDto.setSubTotal(cartDetails.getSubTotal());
                 List<PackagesResDto> packageList = new ArrayList<>();
                 for (CartPackages cartPackages : existingCartDetails.getCartPackagesList()) {
                     Packages packages = packagesRepo.findById(cartPackages.getPackageId()).orElse(null);
                     PackagesResDto packagesResDto = mapper.map(packages, PackagesResDto.class);
+                    packagesResDto.setQty(cartPackages.getQty());
                     packageList.add(packagesResDto);
                 }
                 cartDetailsResDto.setPackagesList(packageList);
@@ -424,80 +448,225 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    public CartDetails reCalculateOrderTotal(Integer userId){
+        CartDetails existingCartDetails = cartDetailsRepo.findByUserId(userId);
+        AtomicReference<Double> subTotal = new AtomicReference<>(0.0);
+        existingCartDetails.getCartPackagesList().stream().forEach(c -> {
+            Packages packages = packagesRepo.findById(c.getPackageId()).orElse(null);
+            subTotal.set(subTotal.get() + packages.getAmount() * c.getQty());
+            });
+        existingCartDetails.setSubTotal(subTotal.get());
+      //  existingCartDetails.setGstAmount(existingCartDetails.getSubTotal() * 0.05);
+        existingCartDetails.setOrderTotal(existingCartDetails.getSubTotal());
+        existingCartDetails.setId(existingCartDetails.getId());
+        CartDetails cartDetails = cartDetailsRepo.save(existingCartDetails);
+        return cartDetails;
+    }
+
     @Override
-    public ResponseEntity<?> saveOrders(OrderDetailsReqDto orderDetailsReqDto, Integer userId) {
+    public ResponseEntity<?> saveOrders(Integer userId) {
         try {
-            List<OrderPackages> orderPackagesList = new ArrayList<>();
-            if (Objects.nonNull(orderDetailsReqDto)) {
-            //    Double totalAmount = 0.0;
-                OrderDetails orderDetails = mapper.map(orderDetailsReqDto, OrderDetails.class);
-                if (Objects.nonNull(orderDetailsReqDto.getPackagesList()) && orderDetailsReqDto.getPackagesList().size() > 0) {
-                    Double subTotal = 0.0;
-                    for (Integer packagesId : orderDetailsReqDto.getPackagesList()) {
+            CartDetails existCartDetails = cartDetailsRepo.findByUserId(userId);
+            if (Objects.nonNull(existCartDetails)) {
+                List<OrderPackages> orderPackagesList = new ArrayList<>();
+                existCartDetails.getCartPackagesList().stream().forEach(c -> {
+                    Packages packages = packagesRepo.findById(c.getPackageId()).orElse(null);
+                    if (packages != null) {
                         OrderPackages orderPackages = new OrderPackages();
-                        orderPackages.setPackageId(packagesId);
+                        orderPackages.setPackageAmount(packages.getAmount());
+                        orderPackages.setFinalPackageAmount(packages.getAmount());
+                        orderPackages.setPackageId(c.getPackageId());
+                        orderPackages.setQty(c.getQty());
                         orderPackagesList.add(orderPackages);
-                        Packages packages = packagesRepo.findById(packagesId).orElse(null);
-                        subTotal = subTotal + packages.getAmount();
                     }
-                    orderDetails.setOrderPackagesList(orderPackagesList);
-               //     totalAmount = subTotal + orderDetailsReqDto.getGstAmount();
-                //    if (totalAmount.equals(orderDetails.getOrderTotal())) {
-                        orderDetails.setUserId(userId);
-                      /*  CartDetails existCartDetails = cartDetailsRepo.findByUserId(userId);
-                        if (Objects.nonNull(existCartDetails)) {
-                            cartDetailsRepo.deleteById(existCartDetails.getId());
-                            cartPackagesRepo.deleteByCartDetailsId(existCartDetails.getId());
-                        }*/
-                        orderDetails = orderDetailsRepo.save(orderDetails);
-                        OrderDetails finalOrderDetails = orderDetails;
-                        orderPackagesList.stream().forEach(c -> {
-                            c.setOrderDetailsId(finalOrderDetails.getId());
-                            orderPackagesRepo.save(c);
-                        });
-                        return new ResponseEntity<>(new CommonResponse().getResponse(
-                                HttpStatus.OK.value(),
-                                Constant.Messages.SUCCESS, orderDetails.getId()), HttpStatus.OK);
-                 //   } else {
-                 //       return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                 //               Constant.Messages.ERROR, "Total is not same"), HttpStatus.INTERNAL_SERVER_ERROR);
-                 //   }
+                });
+                OrderDetails orderDetails = new OrderDetails();
+                orderDetails.setUserId(userId);
+              //  orderDetails.setGstAmount(existCartDetails.getGstAmount());
+                orderDetails.setSubTotal(existCartDetails.getSubTotal());
+                orderDetails.setOrderTotal(existCartDetails.getOrderTotal());
+                orderDetails.setFinalOrderTotal(existCartDetails.getOrderTotal());
+                orderDetails.setOrderPackagesList(orderPackagesList);
+                orderDetails = orderDetailsRepo.save(orderDetails);
+                OrderDetails finalCartDetails = orderDetails;
+                orderDetails.getOrderPackagesList().stream().forEach(orderPackages -> {
+                    orderPackages.setOrderDetailsId(finalCartDetails.getId());
+                    orderPackagesRepo.save(orderPackages);
+                });
+                if(orderDetails.getId() != null){
+                    cartDetailsRepo.delete(existCartDetails);
                 }
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.SUCCESS, "Order Saved"), HttpStatus.INTERNAL_SERVER_ERROR);
             } else {
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                        Constant.Messages.ERROR, "Not saved , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
+                        Constant.Messages.ERROR, "Empty Cart"), HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                Constant.Messages.ERROR, "Not saved , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<?> updateOrders(OrderDetailsReqDto orderDetailsReqDto) {
+        try {
+            OrderDetails existOrderDetails = orderDetailsRepo.findById(orderDetailsReqDto.getOrderId()).orElse(null);
+            if (Objects.nonNull(existOrderDetails)) {
+              /*  existOrderDetails.setAdditionalOrderCost(orderDetailsReqDto.getAdditionalCost());
+                if (Objects.nonNull(orderDetailsReqDto.getOrderPackageList()) && orderDetailsReqDto.getOrderPackageList().size() > 0) {
+                    for (OrderPackageReqDto orderPackageReqDto : orderDetailsReqDto.getOrderPackageList()) {
+                        OrderPackages existPackage = existOrderDetails.getOrderPackagesList().stream().filter(
+                                p -> p.getId().equals(orderPackageReqDto.getOrderPackageId())
+                        ).findAny().orElse(null);
+                        if (existPackage != null) {
+                            existPackage.setAdditionalCost(orderPackageReqDto.getAdditionalCost());
+                            existPackage.setFinalPackageAmount(existPackage.getFinalPackageAmount() + existPackage.getAdditionalCost());
+                            orderPackagesRepo.save(existPackage);
+                        }
+                    }
+                }
+                AtomicReference<Double> finalOrderTotalCal = new AtomicReference<>(existOrderDetails.getFinalOrderTotal());
+                existOrderDetails.getOrderPackagesList().stream().forEach(orderPackages -> {
+                    finalOrderTotalCal.set(finalOrderTotalCal.get() + orderPackages.getFinalPackageAmount());
+                });*/
+                existOrderDetails.setFinalOrderTotal(orderDetailsReqDto.getFinalOrderTotalAmount());
+                existOrderDetails.setOrderStatus(Constant.Status.Approved);
+                existOrderDetails.setNote(orderDetailsReqDto.getNote());
+                orderDetailsRepo.save(existOrderDetails);
+            }
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                    Constant.Messages.SUCCESS, "Saved"), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public OrderDetails reCalculateOrderTotalForOrder(Integer orderId){
+        OrderDetails existOrderDetails = orderDetailsRepo.findById(orderId).orElse(null);
+        AtomicReference<Double> subTotal = new AtomicReference<>(0.0);
+        existOrderDetails.getOrderPackagesList().stream().forEach(c -> {
+            subTotal.set(subTotal.get() + c.getPackageAmount() * c.getQty());
+        });
+        existOrderDetails.setSubTotal(subTotal.get());
+       // existOrderDetails.setGstAmount(existOrderDetails.getSubTotal() * 0.05);
+        existOrderDetails.setOrderTotal(existOrderDetails.getSubTotal());
+        existOrderDetails.setId(existOrderDetails.getId());
+        OrderDetails orderDetails = orderDetailsRepo.save(existOrderDetails);
+       return orderDetails;
     }
 
     @Override
     public ResponseEntity<?> getOrderDetailsByUserId(Integer userId) {
         try {
-            OrderDetails existingOrderDetails = orderDetailsRepo.findByUserId(userId);
-            if (existingOrderDetails != null) {
-                CartDetailsResDto cartDetailsResDto = new CartDetailsResDto();
-                cartDetailsResDto.setGstAmount(existingOrderDetails.getGstAmount());
-                cartDetailsResDto.setOrderTotal(existingOrderDetails.getOrderTotal());
-                cartDetailsResDto.setUserId(existingOrderDetails.getUserId());
-                cartDetailsResDto.setSubTotal(existingOrderDetails.getSubTotal());
-                List<PackagesResDto> packageList = new ArrayList<>();
-                for (OrderPackages orderPackages : existingOrderDetails.getOrderPackagesList()) {
-                    Packages packages = packagesRepo.findById(orderPackages.getPackageId()).orElse(null);
-                    PackagesResDto packagesResDto = mapper.map(packages, PackagesResDto.class);
-                    packageList.add(packagesResDto);
+            List<OrderDetails> existingOrderDetailsList = orderDetailsRepo.findByUserId(userId);
+            if (existingOrderDetailsList != null && existingOrderDetailsList.size() > 0) {
+                List<OrderDetailsResDto> orderDetailsResDtoList = new ArrayList<>();
+                for (int i = 0; i < existingOrderDetailsList.size(); i++) {
+                    OrderDetails existingOrderDetails = existingOrderDetailsList.get(i);
+                    OrderDetails orderDetails = reCalculateOrderTotalForOrder(existingOrderDetails.getId());
+                    OrderDetailsResDto orderDetailsResDto = new OrderDetailsResDto();
+                  //  orderDetailsResDto.setGstAmount(orderDetails.getGstAmount());
+                    orderDetailsResDto.setOrderTotal(existingOrderDetails.getOrderTotal());
+                    orderDetailsResDto.setUserId(orderDetails.getUserId());
+                    orderDetailsResDto.setSubTotal(orderDetails.getSubTotal());
+                    orderDetailsResDto.setOrderId(existingOrderDetails.getId());
+                    orderDetailsResDto.setCreatedAt(existingOrderDetails.getCreatedAt().toString());
+                    orderDetailsResDto.setUpdatedAt(existingOrderDetails.getUpdatedAt().toString());
+                    List<PackagesResDto> packageList = new ArrayList<>();
+                    for (OrderPackages orderPackages : existingOrderDetails.getOrderPackagesList()) {
+                        Packages packages = packagesRepo.findById(orderPackages.getPackageId()).orElse(null);
+                        PackagesResDto packagesResDto = mapper.map(packages, PackagesResDto.class);
+                        packagesResDto.setQty(orderPackages.getQty());
+                        packageList.add(packagesResDto);
+                    }
+                    orderDetailsResDto.setPackagesList(packageList);
+                    orderDetailsResDtoList.add(orderDetailsResDto);
                 }
-                cartDetailsResDto.setPackagesList(packageList);
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
-                        Constant.Messages.SUCCESS, cartDetailsResDto), HttpStatus.OK);
+                        Constant.Messages.SUCCESS, orderDetailsResDtoList), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                        Constant.Messages.ERROR, "Empty cart"), HttpStatus.NOT_FOUND);
+                        Constant.Messages.ERROR, "No Existing Order"), HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> removePackageCart(PackageIdReqDto packageIdReqDto, Integer userId) {
+        try {
+            CartDetails existCart = cartDetailsRepo.findByUserId(userId);
+            if (Objects.nonNull(existCart)) {
+                CartPackages cartPackages = existCart.getCartPackagesList().stream().filter(
+                        p -> p.getPackageId().equals(packageIdReqDto.getPackageId())
+                ).findAny().orElse(null);
+                if (cartPackages == null) {
+                    return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                            Constant.Messages.ERROR, "Invalid Package Id"), HttpStatus.NOT_FOUND);
+                } else {
+                    cartPackagesRepo.delete(cartPackages);
+                    List<CartPackages> cartPackagesList = existCart.getCartPackagesList().stream().filter(
+                            p -> !p.getPackageId().equals(packageIdReqDto.getPackageId())
+                    ).collect(Collectors.toList());
+                    if (cartPackagesList.size() == 0) {
+                        cartDetailsRepo.delete(existCart);
+                    }
+                }
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, "Remove Package"), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.ERROR, "Invalid Package Id"), HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> inDePackage(PackageIdReqDto packageIdReqDto, Integer userId) {
+        try {
+            CartDetails existCart = cartDetailsRepo.findByUserId(userId);
+            if (Objects.nonNull(existCart)) {
+                CartPackages cartPackages = existCart.getCartPackagesList().stream().filter(
+                        p -> p.getPackageId().equals(packageIdReqDto.getPackageId())
+                ).findAny().orElse(null);
+                if (cartPackages == null) {
+                    return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                            Constant.Messages.ERROR, "Invalid Package Id"), HttpStatus.NOT_FOUND);
+                } else {
+                    if (packageIdReqDto.isIncrease()) {
+                        cartPackages.setQty(cartPackages.getQty() + 1);
+                        cartPackagesRepo.save(cartPackages);
+                    } else {
+                        if (cartPackages.getQty() > 1) {
+                            cartPackages.setQty(cartPackages.getQty() - 1);
+                            cartPackagesRepo.save(cartPackages);
+                        } else {
+                            cartPackagesRepo.delete(cartPackages);
+                            List<CartPackages> cartPackagesList = existCart.getCartPackagesList().stream().filter(
+                                    p -> !p.getPackageId().equals(packageIdReqDto.getPackageId())
+                            ).collect(Collectors.toList());
+                            if (cartPackagesList.size() == 0) {
+                                cartDetailsRepo.delete(existCart);
+                            }
+                        }
+                    }
+                }
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, "Plus Minus Qty"), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.ERROR, "Invalid Package Id"), HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());

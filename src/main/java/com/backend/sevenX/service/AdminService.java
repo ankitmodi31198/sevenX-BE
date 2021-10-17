@@ -11,4 +11,6 @@ public interface AdminService {
 
 	ResponseEntity<?> deleteFAQById(Integer id);
 
+	ResponseEntity<?> getAllContactFormDetails();
+
 }

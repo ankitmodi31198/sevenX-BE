@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface CartPackagesRepo extends JpaRepository<CartPackages, Integer> {
 
     void deleteByCartDetailsId(Integer cartDetailsId);
+
+    CartPackages findByCartDetailsIdAndPackageId(Integer id, Integer packagesId);
 }

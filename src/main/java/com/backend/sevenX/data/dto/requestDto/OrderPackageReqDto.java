@@ -5,7 +5,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CartDetailsReqDto {
+public class OrderPackageReqDto {
 
-    private Integer packageId;
+   private Integer orderPackageId;
+
+   private Double additionalCost;
 }

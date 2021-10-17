@@ -45,9 +45,13 @@ public class Constant {
         String DocumentsBYUSER = "/get-documents";
         String PACKAGES = "/packages";
         String PACKAGESBYSCREENNAME = "/packages/{screenName}";
+        String PACKAGESLIST = "/packagesList";
         String CART = "/addCart";
+        String REMOVEPACKAGE = "/packageRemove";
+        String PLUS_MINUS_PACKAGE = "/plus-minus-packages";
         String CARTDETAILS = "/cartDetails";
         String SAVEORDER = "/saveOrder";
+        String UPDATEORDER = "/updateOrder";
         String ORDERDETAILS = "/orderDetails";
     }
 
@@ -72,6 +76,12 @@ public class Constant {
         String SENDER = "vgecit2020@gmail.com";
 
         String FORGOT_PASSWORD_MAIL = "Forgot Password Mail";
+    }
+
+    public interface Status {
+        String Pending = "Pending";
+        String Approved = "Approved";
+        String Paid = "Paid";
     }
 }
 

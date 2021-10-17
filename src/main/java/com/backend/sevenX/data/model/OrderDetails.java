@@ -3,6 +3,7 @@ package com.backend.sevenX.data.model;
 import com.backend.sevenX.utills.Constant;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
@@ -30,15 +31,27 @@ public class OrderDetails extends Base {
 
     private Double subTotal;
 
-    private Double gstAmount;
+   // private Double gstAmount;
 
     private Double orderTotal;
+
+    private Double finalOrderTotal;
+
+    @Lob
+    private String note;
 
     @OneToMany( cascade = CascadeType.ALL)
     private List<OrderPackages> orderPackagesList;
 
+    //@ColumnDefault(value = Constant.Status.Pending)
+    private String orderStatus = Constant.Status.Pending ;
+
+    //@ColumnDefault(value = "0.0")
+    private Double additionalOrderCost = 0.0;
+
     @Lob
     private String transactionId;
 
-    private String transactionStatus;
+   // @ColumnDefault(value = Constant.Status.Pending)
+    private String transactionStatus = Constant.Status.Pending;
 }

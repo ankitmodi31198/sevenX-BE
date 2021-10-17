@@ -173,9 +173,24 @@ public class UserController {
 		return userService.getAllPackagesByScreenName(screenName);
 	}
 
+	@PostMapping(Constant.EndPoints.PACKAGESLIST)
+	public ResponseEntity<?>  getAllPackagesByScreenNameList(@RequestBody PackagesListReqDto packagesListReqDto) throws Exception {
+		return userService.getAllPackagesByScreenNameList(packagesListReqDto);
+	}
+
 	@PostMapping(Constant.EndPoints.CART)
 	public ResponseEntity<?> addToCart(@RequestAttribute("userId") Integer userId, @RequestBody  CartDetailsReqDto cartDetailsReqDto) throws Exception {
 		return userService.saveUpdateCartDetails(cartDetailsReqDto, userId);
+	}
+
+	@DeleteMapping(Constant.EndPoints.REMOVEPACKAGE)
+	public ResponseEntity<?> removePackageCart(@RequestAttribute("userId") Integer userId, @RequestBody  PackageIdReqDto packageIdReqDto) throws Exception {
+		return userService.removePackageCart(packageIdReqDto, userId);
+	}
+
+	@PostMapping(Constant.EndPoints.PLUS_MINUS_PACKAGE)
+	public ResponseEntity<?> inDePackage(@RequestAttribute("userId") Integer userId, @RequestBody  PackageIdReqDto packageIdReqDto) throws Exception {
+		return userService.inDePackage(packageIdReqDto, userId);
 	}
 
 	@GetMapping(Constant.EndPoints.CARTDETAILS)
@@ -184,8 +199,13 @@ public class UserController {
 	}
 
 	@PostMapping(Constant.EndPoints.SAVEORDER)
-	public ResponseEntity<?> saveOrders(@RequestAttribute("userId") Integer userId, @RequestBody  OrderDetailsReqDto orderDetailsReqDto) throws Exception {
-		return userService.saveOrders(orderDetailsReqDto, userId);
+	public ResponseEntity<?> saveOrders(@RequestAttribute("userId") Integer userId) throws Exception {
+		return userService.saveOrders(userId);
+	}
+
+	@PostMapping(Constant.EndPoints.UPDATEORDER)
+	public ResponseEntity<?> updateOrders(@RequestBody OrderDetailsReqDto orderDetailsReqDto) throws Exception {
+		return userService.updateOrders(orderDetailsReqDto);
 	}
 
 	@GetMapping(Constant.EndPoints.ORDERDETAILS)

@@ -1,14 +1,16 @@
 package com.backend.sevenX.data.dto.responseDto;
 
-import com.backend.sevenX.data.model.Packages;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Setter
-public class CartDetailsResDto {
+public class OrderDetailsResDto {
+
+    private Integer orderId;
 
     private Integer userId;
 
@@ -17,6 +19,10 @@ public class CartDetailsResDto {
    // private Double gstAmount;
 
     private Double orderTotal;
+
+    private String createdAt;
+
+    private String updatedAt;
 
     private List<PackagesResDto> packagesList;
 }

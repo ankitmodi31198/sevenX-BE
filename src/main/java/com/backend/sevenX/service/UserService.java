@@ -32,12 +32,19 @@ public interface UserService {
 
 	ResponseEntity<?> getAllPackagesByScreenName(String screenName);
 
+	ResponseEntity<?> getAllPackagesByScreenNameList(PackagesListReqDto packagesListReqDto);
+
 	ResponseEntity<?> saveUpdateCartDetails(CartDetailsReqDto cartDetailsReqDto, Integer userId);
 
 	ResponseEntity<?> getCartDetailsByUserId(Integer userId);
 
-	ResponseEntity<?> saveOrders(OrderDetailsReqDto orderDetailsReqDto, Integer userId);
+	ResponseEntity<?> saveOrders(Integer userId);
+
+	ResponseEntity<?> updateOrders(OrderDetailsReqDto orderDetailsReqDto);
 
 	ResponseEntity<?> getOrderDetailsByUserId(Integer userId);
 
+	ResponseEntity<?> removePackageCart(PackageIdReqDto packageIdReqDto, Integer userId);
+
+	ResponseEntity<?> inDePackage(PackageIdReqDto packageIdReqDto, Integer userId);
 }

@@ -5,7 +5,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CartDetailsReqDto {
+public class PackageIdReqDto {
 
     private Integer packageId;
+
+    private boolean increase;
 }
