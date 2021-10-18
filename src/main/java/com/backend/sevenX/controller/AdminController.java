@@ -4,6 +4,8 @@ import com.backend.sevenX.data.dto.requestDto.FAQReqDto;
 import com.backend.sevenX.service.AdminService;
 import com.backend.sevenX.utills.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,8 +32,8 @@ public class AdminController {
 	}
 
 	@GetMapping(Constant.EndPoints.CONTACT_FORM)
-	public ResponseEntity<?> getAllContactFormDetails() throws Exception {
-		return adminService.getAllContactFormDetails();
+	public ResponseEntity<?> getAllContactFormDetails(@PageableDefault Pageable pageable) throws Exception {
+		return adminService.getAllContactFormDetails(pageable);
 	}
 
 }

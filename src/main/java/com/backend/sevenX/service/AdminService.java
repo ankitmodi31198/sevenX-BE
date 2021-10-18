@@ -1,6 +1,7 @@
 package com.backend.sevenX.service;
 
 import com.backend.sevenX.data.dto.requestDto.FAQReqDto;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 public interface AdminService {
@@ -11,6 +12,6 @@ public interface AdminService {
 
 	ResponseEntity<?> deleteFAQById(Integer id);
 
-	ResponseEntity<?> getAllContactFormDetails();
+	ResponseEntity<?> getAllContactFormDetails(Pageable pageable);
 
 }
