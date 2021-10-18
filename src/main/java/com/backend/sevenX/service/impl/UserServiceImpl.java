@@ -611,11 +611,9 @@ public class UserServiceImpl implements UserService {
                     return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
                             Constant.Messages.ERROR, "Invalid Package Id"), HttpStatus.NOT_FOUND);
                 } else {
-                    cartPackagesRepo.delete(cartPackages);
-                    List<CartPackages> cartPackagesList = existCart.getCartPackagesList().stream().filter(
-                            p -> !p.getPackageId().equals(packageIdReqDto.getPackageId())
-                    ).collect(Collectors.toList());
-                    if (cartPackagesList.size() == 0) {
+                    existCart.getCartPackagesList().remove(cartPackages);
+                    cartPackagesRepo.deleteById(cartPackages.getId());
+                    if (existCart.getCartPackagesList().size() == 0) {
                         cartDetailsRepo.delete(existCart);
                     }
                 }
