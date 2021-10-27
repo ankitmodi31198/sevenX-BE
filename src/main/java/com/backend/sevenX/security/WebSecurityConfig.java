@@ -95,6 +95,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         list.add(Constant.EndPoints.FORGOT_PASSWORD);
         list.add(Constant.EndPoints.RESET_PASSWORD);
         list.add(Constant.EndPoints.Documents);
+        list.add(Constant.EndPoints.PACKAGESBYSCREENNAME);
+        list.add(Constant.EndPoints.PACKAGESLIST);
         return list.toArray(new String[list.size()]);
     }
 
