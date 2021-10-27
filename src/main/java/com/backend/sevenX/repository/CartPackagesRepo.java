@@ -9,5 +9,7 @@ public interface CartPackagesRepo extends JpaRepository<CartPackages, Integer> {
 
     void deleteByCartDetailsId(Integer cartDetailsId);
 
+    void deleteByPackageId(Integer packageId);
+
     CartPackages findByCartDetailsIdAndPackageId(Integer id, Integer packagesId);
 }

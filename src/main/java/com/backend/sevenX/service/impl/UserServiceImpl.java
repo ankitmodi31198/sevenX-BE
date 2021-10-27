@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
     private OrderDetailsRepo orderDetailsRepo;
 
     @Autowired
-    private OrderPackagesRepo orderPackagesRepo;
+    private OrderPackagesRepo   orderPackagesRepo;
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
@@ -611,16 +611,17 @@ public class UserServiceImpl implements UserService {
                     return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
                             Constant.Messages.ERROR, "Invalid Package Id"), HttpStatus.NOT_FOUND);
                 } else {
-                    cartPackagesRepo.deleteById(cartPackages.getId());
+                    cartPackages.setDeletedAt(LocalDateTime.now());
+                    cartPackagesRepo.save(cartPackages);
                     List<CartPackages> cartPackagesList = existCart.getCartPackagesList().stream().filter(
                             p -> !p.getPackageId().equals(packageIdReqDto.getPackageId())
                     ).collect(Collectors.toList());
                     if (cartPackagesList.size() == 0) {
-                        cartDetailsRepo.deleteById(existCart.getId());
+                        cartDetailsRepo.delete(existCart);
                     }
+                    return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                            Constant.Messages.SUCCESS, "Remove Package"), HttpStatus.OK);
                 }
-                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
-                        Constant.Messages.SUCCESS, "Remove Package"), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
                         Constant.Messages.ERROR, "Invalid Package Id"), HttpStatus.NOT_FOUND);
