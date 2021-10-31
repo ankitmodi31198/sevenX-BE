@@ -213,7 +213,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException(Constant.Messages.USER_NOT_FOUND));
 
         if (signUpDto.getPassword() != null && users.getLoginType().equals(LOGIN_TYPE_NORMAL)) {
-            users.setPassword(General.hashPassword(signUpDto.getPassword()));
+            if (General.nonNullNonEmpty(signUpDto.getNewPassword()) &&
+                    General.checkPassword(signUpDto.getPassword(), users.getPassword())) {
+                users.setPassword(General.hashPassword(signUpDto.getNewPassword()));
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.ERROR, "Password is not same , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
 
         if (Strings.isNotEmpty(signUpDto.getAddress())) {
@@ -518,9 +524,21 @@ public class UserServiceImpl implements UserService {
                 orderDetails.setPhoneNo(saveOrderDetailsReqDto.getPhoneNo());
                 if (orderDetails.getId() != null) {
                     cartDetailsRepo.delete(existCartDetails);
+                    OrderDetailsResDto orderDetailsResDto = mapper.map(orderDetails, OrderDetailsResDto.class);
+                    List<PackagesResDto> packageList = new ArrayList<>();
+                    for (OrderPackages orderPackages : orderDetails.getOrderPackagesList()) {
+                        Packages packages = packagesRepo.findById(orderPackages.getPackageId()).orElse(null);
+                        PackagesResDto packagesResDto = mapper.map(packages, PackagesResDto.class);
+                        packagesResDto.setQty(orderPackages.getQty());
+                        packagesResDto.setFinalPackageAmount(orderPackages.getFinalPackageAmount());
+                        packageList.add(packagesResDto);
+                    }
+                    orderDetailsResDto.setPackagesList(packageList);
+                    return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                            Constant.Messages.SUCCESS, orderDetailsResDto), HttpStatus.OK);
                 }
-                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                        Constant.Messages.SUCCESS, "Order Saved"), HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        Constant.Messages.ERROR, "order not saved"), HttpStatus.INTERNAL_SERVER_ERROR);
             } else {
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
                         Constant.Messages.ERROR, "Empty Cart"), HttpStatus.INTERNAL_SERVER_ERROR);
