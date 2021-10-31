@@ -611,6 +611,7 @@ public class UserServiceImpl implements UserService {
                         Packages packages = packagesRepo.findById(orderPackages.getPackageId()).orElse(null);
                         PackagesResDto packagesResDto = mapper.map(packages, PackagesResDto.class);
                         packagesResDto.setQty(orderPackages.getQty());
+                        packagesResDto.setFinalPackageAmount(orderPackages.getFinalPackageAmount());
                         packageList.add(packagesResDto);
                     }
                     orderDetailsResDto.setPackagesList(packageList);
@@ -791,27 +792,13 @@ public class UserServiceImpl implements UserService {
             Optional<OrderDetails> existingOrderDetailsList = orderDetailsRepo.findById(orderId);
             if (existingOrderDetailsList.isPresent()) {
                 OrderDetails existingOrderDetails = existingOrderDetailsList.get();
-                OrderDetails orderDetails = reCalculateOrderTotalForOrder(existingOrderDetails.getId());
-                OrderDetailsResDto orderDetailsResDto = new OrderDetailsResDto();
-                //  orderDetailsResDto.setGstAmount(orderDetails.getGstAmount());
-                orderDetailsResDto.setOrderTotal(existingOrderDetails.getOrderTotal());
-                orderDetailsResDto.setUserId(orderDetails.getUserId());
-                orderDetailsResDto.setSubTotal(orderDetails.getSubTotal());
-                orderDetailsResDto.setId(existingOrderDetails.getId());
-                orderDetailsResDto.setCreatedAt(existingOrderDetails.getCreatedAt().toString());
-                orderDetailsResDto.setUpdatedAt(existingOrderDetails.getUpdatedAt().toString());
-                orderDetailsResDto.setUsername(existingOrderDetails.getUsername());
-                orderDetailsResDto.setFirstName(existingOrderDetails.getFirstName());
-                orderDetailsResDto.setAddress(existingOrderDetails.getAddress());
-                orderDetailsResDto.setState(existingOrderDetails.getState());
-                orderDetailsResDto.setGstNumber(existingOrderDetails.getGstNumber());
-                orderDetailsResDto.setPanNumber(existingOrderDetails.getPanNumber());
-                orderDetailsResDto.setPhoneNo(existingOrderDetails.getPhoneNo());
+                OrderDetailsResDto orderDetailsResDto = mapper.map(existingOrderDetails, OrderDetailsResDto.class);
                 List<PackagesResDto> packageList = new ArrayList<>();
                 for (OrderPackages orderPackages : existingOrderDetails.getOrderPackagesList()) {
                     Packages packages = packagesRepo.findById(orderPackages.getPackageId()).orElse(null);
                     PackagesResDto packagesResDto = mapper.map(packages, PackagesResDto.class);
                     packagesResDto.setQty(orderPackages.getQty());
+                    packagesResDto.setFinalPackageAmount(orderPackages.getFinalPackageAmount());
                     packageList.add(packagesResDto);
                 }
                 orderDetailsResDto.setPackagesList(packageList);
