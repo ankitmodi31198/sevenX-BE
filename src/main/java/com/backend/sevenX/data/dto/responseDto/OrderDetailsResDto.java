@@ -10,9 +10,23 @@ import java.util.List;
 @Setter
 public class OrderDetailsResDto {
 
-    private Integer orderId;
+    private Integer id;
 
     private Integer userId;
+
+    private String username;
+
+    private String firstName;
+
+    private String phoneNo;
+
+    private String address;
+
+    private String state;
+
+    private String gstNumber;
+
+    private String panNumber;
 
     private Double subTotal;
 
@@ -25,4 +39,12 @@ public class OrderDetailsResDto {
     private String updatedAt;
 
     private List<PackagesResDto> packagesList;
+
+    private Double finalOrderTotal;
+
+    private String orderStatus;
+
+    private String transactionStatus;
+
+    private String transactionId;
 }

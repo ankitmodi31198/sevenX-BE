@@ -38,7 +38,7 @@ public interface UserService {
 
 	ResponseEntity<?> getCartDetailsByUserId(Integer userId);
 
-	ResponseEntity<?> saveOrders(Integer userId);
+	ResponseEntity<?> saveOrders(Integer userId, SaveOrderDetailsReqDto saveOrderDetailsReqDto);
 
 	ResponseEntity<?> updateOrders(OrderDetailsReqDto orderDetailsReqDto);
 
@@ -47,4 +47,8 @@ public interface UserService {
 	ResponseEntity<?> removePackageCart(PackageIdReqDto packageIdReqDto, Integer userId);
 
 	ResponseEntity<?> inDePackage(PackageIdReqDto packageIdReqDto, Integer userId);
+
+    ResponseEntity<?> getAllOrderByFilter(OrderFilterDto orderFilterDto);
+
+	ResponseEntity<?> getOrderDetailsByOrderId(Integer orderId);
 }

@@ -15,19 +15,33 @@ import java.util.List;
 @Getter
 @Setter
 @DynamicInsert
-@Table( name = "orderDetails",
+@Table( name = "order_details",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {Constant.EntityField.DELETED_AT})
                 // hibernate bug of inheritance second parameter accepting as entity variable name
         })
 //soft delete condition
 @SQLDelete(sql =
-        "UPDATE orderDetails SET "+ Constant.DbField.DELETED_AT +"=now() " +
+        "UPDATE order_details SET "+ Constant.DbField.DELETED_AT +"=now() " +
                 "WHERE id = ?")
 @Where(clause = Constant.DbField.DELETED_AT +" IS NULL")
 public class OrderDetails extends Base {
 
     private Integer userId;
+
+    private String username;
+
+    private String firstName;
+
+    private String phoneNo;
+
+    private String address;
+
+    private String state;
+
+    private String gstNumber;
+
+    private String panNumber;
 
     private Double subTotal;
 

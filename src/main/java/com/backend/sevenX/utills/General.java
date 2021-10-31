@@ -68,4 +68,9 @@ public class General {
         return strictMapper;
     }
 
+    public static boolean nonNullNonEmpty(String strObj) {
+
+        return (Objects.nonNull(strObj) && !strObj.trim().isEmpty());
+    }
+
 }

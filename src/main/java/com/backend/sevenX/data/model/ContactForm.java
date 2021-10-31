@@ -15,14 +15,14 @@ import javax.persistence.UniqueConstraint;
 @Getter
 @Setter
 @DynamicInsert
-@Table( name = "contactForm",
+@Table( name = "contact_form",
 	uniqueConstraints = {
 		@UniqueConstraint(columnNames = {Constant.EntityField.DELETED_AT})
 		// hibernate bug of inheritance second parameter accepting as entity variable name
 	})
 //soft delete condition
 @SQLDelete(sql =
-	"UPDATE contactForm SET "+ Constant.DbField.DELETED_AT +"=now() " +
+	"UPDATE contact_form SET "+ Constant.DbField.DELETED_AT +"=now() " +
 		"WHERE id = ?")
 @Where(clause = Constant.DbField.DELETED_AT +" IS NULL")
 public class ContactForm extends Base {

@@ -1,5 +1,6 @@
 package com.backend.sevenX.controller;
 
+import com.backend.sevenX.data.dto.requestDto.ContactFilterDto;
 import com.backend.sevenX.data.dto.requestDto.FAQReqDto;
 import com.backend.sevenX.service.AdminService;
 import com.backend.sevenX.utills.Constant;
@@ -31,9 +32,9 @@ public class AdminController {
 		return adminService.deleteFAQById(id);
 	}
 
-	@GetMapping(Constant.EndPoints.CONTACT_FORM)
-	public ResponseEntity<?> getAllContactFormDetails(@PageableDefault Pageable pageable) throws Exception {
-		return adminService.getAllContactFormDetails(pageable);
+	@PostMapping(Constant.EndPoints.ALLCONTACT)
+	public ResponseEntity<?> getAllContactFormDetails(@RequestBody ContactFilterDto contactFilterDto) throws Exception {
+		return adminService.getAllContactFormDetails(contactFilterDto);
 	}
 
 }

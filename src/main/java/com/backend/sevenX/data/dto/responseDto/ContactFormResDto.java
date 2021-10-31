@@ -21,4 +21,6 @@ public class ContactFormResDto {
 
 	private String screenName;
 
+	private String createdAt;
+
 }

@@ -199,8 +199,8 @@ public class UserController {
 	}
 
 	@PostMapping(Constant.EndPoints.SAVEORDER)
-	public ResponseEntity<?> saveOrders(@RequestAttribute("userId") Integer userId) throws Exception {
-		return userService.saveOrders(userId);
+	public ResponseEntity<?> saveOrders(@RequestAttribute("userId") Integer userId , @RequestBody SaveOrderDetailsReqDto saveOrderDetailsReqDto) throws Exception {
+		return userService.saveOrders(userId, saveOrderDetailsReqDto);
 	}
 
 	@PostMapping(Constant.EndPoints.UPDATEORDER)
@@ -211,5 +211,15 @@ public class UserController {
 	@GetMapping(Constant.EndPoints.ORDERDETAILS)
 	public ResponseEntity<?> getOrderDetailsByUserId( @RequestAttribute("userId") Integer userId) throws Exception {
 		return userService.getOrderDetailsByUserId(userId);
+	}
+
+	@GetMapping(Constant.EndPoints.ORDERDETAILSBYORDERID)
+	public ResponseEntity<?> getOrderDetailsByOrderId(@PathVariable("orderId") Integer orderId) throws Exception {
+		return userService.getOrderDetailsByOrderId(orderId);
+	}
+
+	@PostMapping(Constant.EndPoints.ORDERLIST)
+	public ResponseEntity<?> getAllOrder(@RequestBody OrderFilterDto orderFilterDto) throws Exception {
+		return userService.getAllOrderByFilter(orderFilterDto);
 	}
 }

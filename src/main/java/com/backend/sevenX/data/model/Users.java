@@ -35,13 +35,19 @@ public class Users extends Base{
 
     private String socialId;
 
-    private String firstName = "";
+    private String firstName;
 
-    private String lastName = "";
+    private String lastName;
 
-    private String phoneNo = "";
+    private String phoneNo;
 
-    private String address = "";
+    private String address;
+
+    private String state;
+
+    private String gstNumber;
+
+    private String panNumber;
 
     private String role;
 

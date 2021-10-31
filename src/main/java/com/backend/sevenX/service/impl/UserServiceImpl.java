@@ -16,13 +16,17 @@ import org.apache.logging.log4j.util.Strings;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.lang.reflect.Type;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -57,7 +61,7 @@ public class UserServiceImpl implements UserService {
     private OrderDetailsRepo orderDetailsRepo;
 
     @Autowired
-    private OrderPackagesRepo   orderPackagesRepo;
+    private OrderPackagesRepo orderPackagesRepo;
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
@@ -226,6 +230,18 @@ public class UserServiceImpl implements UserService {
 
         if (Strings.isNotEmpty(signUpDto.getLastName())) {
             users.setLastName(signUpDto.getLastName());
+        }
+
+        if (Strings.isNotEmpty(signUpDto.getState())) {
+            users.setState(signUpDto.getState());
+        }
+
+        if (Strings.isNotEmpty(signUpDto.getPanNumber())) {
+            users.setPanNumber(signUpDto.getPanNumber());
+        }
+
+        if (Strings.isNotEmpty(signUpDto.getGstNumber())) {
+            users.setGstNumber(signUpDto.getGstNumber());
         }
 
         usersRepo.save(users);
@@ -423,7 +439,7 @@ public class UserServiceImpl implements UserService {
             if (existingCartDetails != null) {
                 CartDetails cartDetails = reCalculateOrderTotal(userId);
                 CartDetailsResDto cartDetailsResDto = new CartDetailsResDto();
-               // cartDetailsResDto.setGstAmount(cartDetails.getGstAmount());
+                // cartDetailsResDto.setGstAmount(cartDetails.getGstAmount());
                 cartDetailsResDto.setOrderTotal(cartDetails.getOrderTotal());
                 cartDetailsResDto.setUserId(cartDetails.getUserId());
                 cartDetailsResDto.setSubTotal(cartDetails.getSubTotal());
@@ -448,15 +464,15 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    public CartDetails reCalculateOrderTotal(Integer userId){
+    public CartDetails reCalculateOrderTotal(Integer userId) {
         CartDetails existingCartDetails = cartDetailsRepo.findByUserId(userId);
         AtomicReference<Double> subTotal = new AtomicReference<>(0.0);
         existingCartDetails.getCartPackagesList().stream().forEach(c -> {
             Packages packages = packagesRepo.findById(c.getPackageId()).orElse(null);
             subTotal.set(subTotal.get() + packages.getAmount() * c.getQty());
-            });
+        });
         existingCartDetails.setSubTotal(subTotal.get());
-      //  existingCartDetails.setGstAmount(existingCartDetails.getSubTotal() * 0.05);
+        //  existingCartDetails.setGstAmount(existingCartDetails.getSubTotal() * 0.05);
         existingCartDetails.setOrderTotal(existingCartDetails.getSubTotal());
         existingCartDetails.setId(existingCartDetails.getId());
         CartDetails cartDetails = cartDetailsRepo.save(existingCartDetails);
@@ -464,7 +480,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> saveOrders(Integer userId) {
+    public ResponseEntity<?> saveOrders(Integer userId, SaveOrderDetailsReqDto saveOrderDetailsReqDto) {
         try {
             CartDetails existCartDetails = cartDetailsRepo.findByUserId(userId);
             if (Objects.nonNull(existCartDetails)) {
@@ -474,7 +490,7 @@ public class UserServiceImpl implements UserService {
                     if (packages != null) {
                         OrderPackages orderPackages = new OrderPackages();
                         orderPackages.setPackageAmount(packages.getAmount());
-                        orderPackages.setFinalPackageAmount(packages.getAmount());
+                        orderPackages.setFinalPackageAmount(c.getQty() * packages.getAmount());
                         orderPackages.setPackageId(c.getPackageId());
                         orderPackages.setQty(c.getQty());
                         orderPackagesList.add(orderPackages);
@@ -482,7 +498,7 @@ public class UserServiceImpl implements UserService {
                 });
                 OrderDetails orderDetails = new OrderDetails();
                 orderDetails.setUserId(userId);
-              //  orderDetails.setGstAmount(existCartDetails.getGstAmount());
+                //  orderDetails.setGstAmount(existCartDetails.getGstAmount());
                 orderDetails.setSubTotal(existCartDetails.getSubTotal());
                 orderDetails.setOrderTotal(existCartDetails.getOrderTotal());
                 orderDetails.setFinalOrderTotal(existCartDetails.getOrderTotal());
@@ -493,7 +509,14 @@ public class UserServiceImpl implements UserService {
                     orderPackages.setOrderDetailsId(finalCartDetails.getId());
                     orderPackagesRepo.save(orderPackages);
                 });
-                if(orderDetails.getId() != null){
+                orderDetails.setUsername(saveOrderDetailsReqDto.getUsername());
+                orderDetails.setFirstName(saveOrderDetailsReqDto.getFirstName());
+                orderDetails.setAddress(saveOrderDetailsReqDto.getAddress());
+                orderDetails.setState(saveOrderDetailsReqDto.getState());
+                orderDetails.setGstNumber(saveOrderDetailsReqDto.getGstNumber());
+                orderDetails.setPanNumber(saveOrderDetailsReqDto.getPanNumber());
+                orderDetails.setPhoneNo(saveOrderDetailsReqDto.getPhoneNo());
+                if (orderDetails.getId() != null) {
                     cartDetailsRepo.delete(existCartDetails);
                 }
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
@@ -545,18 +568,18 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    public OrderDetails reCalculateOrderTotalForOrder(Integer orderId){
+    public OrderDetails reCalculateOrderTotalForOrder(Integer orderId) {
         OrderDetails existOrderDetails = orderDetailsRepo.findById(orderId).orElse(null);
         AtomicReference<Double> subTotal = new AtomicReference<>(0.0);
         existOrderDetails.getOrderPackagesList().stream().forEach(c -> {
             subTotal.set(subTotal.get() + c.getPackageAmount() * c.getQty());
         });
         existOrderDetails.setSubTotal(subTotal.get());
-       // existOrderDetails.setGstAmount(existOrderDetails.getSubTotal() * 0.05);
+        // existOrderDetails.setGstAmount(existOrderDetails.getSubTotal() * 0.05);
         existOrderDetails.setOrderTotal(existOrderDetails.getSubTotal());
         existOrderDetails.setId(existOrderDetails.getId());
         OrderDetails orderDetails = orderDetailsRepo.save(existOrderDetails);
-       return orderDetails;
+        return orderDetails;
     }
 
     @Override
@@ -569,13 +592,20 @@ public class UserServiceImpl implements UserService {
                     OrderDetails existingOrderDetails = existingOrderDetailsList.get(i);
                     OrderDetails orderDetails = reCalculateOrderTotalForOrder(existingOrderDetails.getId());
                     OrderDetailsResDto orderDetailsResDto = new OrderDetailsResDto();
-                  //  orderDetailsResDto.setGstAmount(orderDetails.getGstAmount());
+                    //  orderDetailsResDto.setGstAmount(orderDetails.getGstAmount());
                     orderDetailsResDto.setOrderTotal(existingOrderDetails.getOrderTotal());
                     orderDetailsResDto.setUserId(orderDetails.getUserId());
                     orderDetailsResDto.setSubTotal(orderDetails.getSubTotal());
-                    orderDetailsResDto.setOrderId(existingOrderDetails.getId());
+                    orderDetailsResDto.setId(existingOrderDetails.getId());
                     orderDetailsResDto.setCreatedAt(existingOrderDetails.getCreatedAt().toString());
                     orderDetailsResDto.setUpdatedAt(existingOrderDetails.getUpdatedAt().toString());
+                    orderDetailsResDto.setUsername(existingOrderDetails.getUsername());
+                    orderDetailsResDto.setFirstName(existingOrderDetails.getFirstName());
+                    orderDetailsResDto.setAddress(existingOrderDetails.getAddress());
+                    orderDetailsResDto.setState(existingOrderDetails.getState());
+                    orderDetailsResDto.setGstNumber(existingOrderDetails.getGstNumber());
+                    orderDetailsResDto.setPanNumber(existingOrderDetails.getPanNumber());
+                    orderDetailsResDto.setPhoneNo(existingOrderDetails.getPhoneNo());
                     List<PackagesResDto> packageList = new ArrayList<>();
                     for (OrderPackages orderPackages : existingOrderDetails.getOrderPackagesList()) {
                         Packages packages = packagesRepo.findById(orderPackages.getPackageId()).orElse(null);
@@ -668,6 +698,128 @@ public class UserServiceImpl implements UserService {
             } else {
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
                         Constant.Messages.ERROR, "Invalid Package Id"), HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllOrderByFilter(OrderFilterDto orderFilterDto) {
+        try {
+            Map<String, Object> param = new HashMap<>();
+            StringBuilder queryBuilder = new StringBuilder("SELECT * from order_details od ");
+            queryBuilder.append("WHERE deleted_at IS NULL");
+            if (General.nonNullNonEmpty(orderFilterDto.getUsername())) {
+                queryBuilder.append(" AND od.user_name in (:user_name)");
+                param.put("user_name", orderFilterDto.getUsername());
+            }
+            if (General.nonNullNonEmpty(orderFilterDto.getFirstName())) {
+                queryBuilder.append(" AND od.first_name in (:first_name)");
+                param.put("first_name", orderFilterDto.getFirstName());
+            }
+            if (General.nonNullNonEmpty(orderFilterDto.getPhoneNo())) {
+                queryBuilder.append(" AND od.phone_no in (:phone_no)");
+                param.put("phone_no", orderFilterDto.getPhoneNo());
+            }
+            if (General.nonNullNonEmpty(orderFilterDto.getOrderStatus())) {
+                queryBuilder.append(" AND od.order_status in (:order_status)");
+                param.put("order_status", orderFilterDto.getOrderStatus());
+            }
+            if (General.nonNullNonEmpty(orderFilterDto.getTransactionStatus())) {
+                queryBuilder.append(" AND od.transaction_status in (:transaction_status)");
+                param.put("transaction_status", orderFilterDto.getTransactionStatus());
+            }
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            if (Objects.nonNull(orderFilterDto.getFromDate())) {
+                Date from = new Date(orderFilterDto.getFromDate());
+                queryBuilder.append(" AND od.created_at > '");
+                queryBuilder.append(df.format(from));
+                queryBuilder.append("'");
+            }
+            if(Objects.nonNull(orderFilterDto.getToDate())){
+                Date to = new Date(orderFilterDto.getToDate());
+                queryBuilder.append(" AND od.created_at < '");
+                queryBuilder.append(df.format(to));
+                queryBuilder.append("'");
+            }
+            if (General.nonNullNonEmpty(orderFilterDto.getSortField()) && General.nonNullNonEmpty(orderFilterDto.getSortOrder())) {
+                queryBuilder.append(" ORDER BY ");
+                queryBuilder.append(orderFilterDto.getSortField() + " " + orderFilterDto.getSortOrder());
+            }
+            if (Objects.nonNull(orderFilterDto.getLimit())) {
+                queryBuilder.append(String.format(" LIMIT %s ", orderFilterDto.getLimit()));
+            }
+            if (Objects.nonNull(orderFilterDto.getOffset())) {
+                queryBuilder.append(String.format(" OFFSET %s", orderFilterDto.getOffset()));
+            }
+            try {
+                Query query = entityManager.createNativeQuery(queryBuilder.toString(), OrderDetails.class);
+                setParameters(query, param);
+                List<OrderDetails> orderDetailsList = query.getResultList();
+                Type targetListType = new TypeToken<List<OrderDetailsResDto>>() {
+                }.getType();
+                List<OrderDetailsResDto> orderDetailsResDtoList = mapper.map(orderDetailsList, targetListType);
+                ListOrderDetailsResDto listOrderDetailsResDto = new ListOrderDetailsResDto();
+                listOrderDetailsResDto.setOrderList(orderDetailsResDtoList);
+                listOrderDetailsResDto.setTotalOrdersCount(orderDetailsRepo.countRecords());
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, listOrderDetailsResDto), HttpStatus.OK);
+            } catch (Exception e) {
+                throw new Exception("Error in query");
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void setParameters(Query query, Map<String, Object> params) {
+        if (!params.isEmpty()) {
+            params.entrySet().stream().forEach(entrySet -> {
+                query.setParameter(entrySet.getKey(), entrySet.getValue());
+            });
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getOrderDetailsByOrderId(Integer orderId) {
+        try {
+            Optional<OrderDetails> existingOrderDetailsList = orderDetailsRepo.findById(orderId);
+            if (existingOrderDetailsList.isPresent()) {
+                OrderDetails existingOrderDetails = existingOrderDetailsList.get();
+                OrderDetails orderDetails = reCalculateOrderTotalForOrder(existingOrderDetails.getId());
+                OrderDetailsResDto orderDetailsResDto = new OrderDetailsResDto();
+                //  orderDetailsResDto.setGstAmount(orderDetails.getGstAmount());
+                orderDetailsResDto.setOrderTotal(existingOrderDetails.getOrderTotal());
+                orderDetailsResDto.setUserId(orderDetails.getUserId());
+                orderDetailsResDto.setSubTotal(orderDetails.getSubTotal());
+                orderDetailsResDto.setId(existingOrderDetails.getId());
+                orderDetailsResDto.setCreatedAt(existingOrderDetails.getCreatedAt().toString());
+                orderDetailsResDto.setUpdatedAt(existingOrderDetails.getUpdatedAt().toString());
+                orderDetailsResDto.setUsername(existingOrderDetails.getUsername());
+                orderDetailsResDto.setFirstName(existingOrderDetails.getFirstName());
+                orderDetailsResDto.setAddress(existingOrderDetails.getAddress());
+                orderDetailsResDto.setState(existingOrderDetails.getState());
+                orderDetailsResDto.setGstNumber(existingOrderDetails.getGstNumber());
+                orderDetailsResDto.setPanNumber(existingOrderDetails.getPanNumber());
+                orderDetailsResDto.setPhoneNo(existingOrderDetails.getPhoneNo());
+                List<PackagesResDto> packageList = new ArrayList<>();
+                for (OrderPackages orderPackages : existingOrderDetails.getOrderPackagesList()) {
+                    Packages packages = packagesRepo.findById(orderPackages.getPackageId()).orElse(null);
+                    PackagesResDto packagesResDto = mapper.map(packages, PackagesResDto.class);
+                    packagesResDto.setQty(orderPackages.getQty());
+                    packageList.add(packagesResDto);
+                }
+                orderDetailsResDto.setPackagesList(packageList);
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, orderDetailsResDto), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.ERROR, "Invalid Order Id"), HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
