@@ -22,4 +22,6 @@ public class OrderDetailsReqDto {
     private String transactionId;
 
     private String transactionStatus;
+
+    private String transactionNote;
 }

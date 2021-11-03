@@ -9,5 +9,7 @@ public class OrderPackageReqDto {
 
    private Integer orderPackageId;
 
+   private String note;
+
    private Double additionalCost;
 }

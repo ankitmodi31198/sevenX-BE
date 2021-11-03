@@ -53,6 +53,7 @@ public class Constant {
         String CARTDETAILS = "/cartDetails";
         String SAVEORDER = "/saveOrder";
         String UPDATEORDER = "/updateOrder";
+        String SAVEPAYMENT = "/savePayment";
         String ORDERDETAILS = "/orderDetails";
         String ORDERDETAILSBYORDERID = "/orderDetails/{orderId}";
         String ORDERLIST = "/orderList";

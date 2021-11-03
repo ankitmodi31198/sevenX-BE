@@ -563,6 +563,7 @@ public class UserServiceImpl implements UserService {
                         ).findAny().orElse(null);
                         if (existPackage != null) {
                             existPackage.setAdditionalCost(orderPackageReqDto.getAdditionalCost());
+                            existPackage.setNote(orderPackageReqDto.getNote());
                             if(Objects.nonNull(existPackage.getFinalPackageAmount())) {
                                 existPackage.setFinalPackageAmount(existPackage.getFinalPackageAmount());
                             } else {
@@ -579,6 +580,25 @@ public class UserServiceImpl implements UserService {
             }
             return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
                     Constant.Messages.SUCCESS, "Saved"), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> savePayment(OrderDetailsReqDto orderDetailsReqDto) {
+        try {
+            OrderDetails existOrderDetails = orderDetailsRepo.findById(orderDetailsReqDto.getOrderId()).orElse(null);
+            if (Objects.nonNull(existOrderDetails)) {
+                existOrderDetails.setTransactionId(orderDetailsReqDto.getTransactionId());
+                existOrderDetails.setTransactionStatus(Constant.Status.Paid);
+                existOrderDetails.setTransactionNote(orderDetailsReqDto.getTransactionNote());
+                orderDetailsRepo.save(existOrderDetails);
+            }
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                    Constant.Messages.SUCCESS, "Payment Done"), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),

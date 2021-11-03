@@ -68,4 +68,7 @@ public class OrderDetails extends Base {
 
    // @ColumnDefault(value = Constant.Status.Pending)
     private String transactionStatus = Constant.Status.Pending;
+
+    @Lob
+    private String transactionNote;
 }

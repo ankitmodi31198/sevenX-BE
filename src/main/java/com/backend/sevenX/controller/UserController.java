@@ -208,6 +208,11 @@ public class UserController {
 		return userService.updateOrders(orderDetailsReqDto);
 	}
 
+	@PostMapping(Constant.EndPoints.SAVEPAYMENT)
+	public ResponseEntity<?> savePayment(@RequestBody OrderDetailsReqDto orderDetailsReqDto) throws Exception {
+		return userService.savePayment(orderDetailsReqDto);
+	}
+
 	@GetMapping(Constant.EndPoints.ORDERDETAILS)
 	public ResponseEntity<?> getOrderDetailsByUserId( @RequestAttribute("userId") Integer userId) throws Exception {
 		return userService.getOrderDetailsByUserId(userId);

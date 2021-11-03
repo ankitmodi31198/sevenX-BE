@@ -9,6 +9,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -30,4 +31,7 @@ public class OrderPackages extends Base {
     private Double additionalCost = 0.0;
 
     private Double finalPackageAmount;
+
+    @Lob
+    private String note;
 }

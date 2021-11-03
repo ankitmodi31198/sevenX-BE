@@ -51,4 +51,6 @@ public interface UserService {
     ResponseEntity<?> getAllOrderByFilter(OrderFilterDto orderFilterDto);
 
 	ResponseEntity<?> getOrderDetailsByOrderId(Integer orderId);
+
+	ResponseEntity<?> savePayment(OrderDetailsReqDto orderDetailsReqDto);
 }
