@@ -555,7 +555,7 @@ public class UserServiceImpl implements UserService {
         try {
             OrderDetails existOrderDetails = orderDetailsRepo.findById(orderDetailsReqDto.getOrderId()).orElse(null);
             if (Objects.nonNull(existOrderDetails)) {
-              /*  existOrderDetails.setAdditionalOrderCost(orderDetailsReqDto.getAdditionalCost());
+                existOrderDetails.setAdditionalOrderCost(orderDetailsReqDto.getAdditionalCost());
                 if (Objects.nonNull(orderDetailsReqDto.getOrderPackageList()) && orderDetailsReqDto.getOrderPackageList().size() > 0) {
                     for (OrderPackageReqDto orderPackageReqDto : orderDetailsReqDto.getOrderPackageList()) {
                         OrderPackages existPackage = existOrderDetails.getOrderPackagesList().stream().filter(
@@ -563,15 +563,15 @@ public class UserServiceImpl implements UserService {
                         ).findAny().orElse(null);
                         if (existPackage != null) {
                             existPackage.setAdditionalCost(orderPackageReqDto.getAdditionalCost());
-                            existPackage.setFinalPackageAmount(existPackage.getFinalPackageAmount() + existPackage.getAdditionalCost());
+                            if(Objects.nonNull(existPackage.getFinalPackageAmount())) {
+                                existPackage.setFinalPackageAmount(existPackage.getFinalPackageAmount());
+                            } else {
+                                existPackage.setFinalPackageAmount(existPackage.getPackageAmount());
+                            }
                             orderPackagesRepo.save(existPackage);
                         }
                     }
                 }
-                AtomicReference<Double> finalOrderTotalCal = new AtomicReference<>(existOrderDetails.getFinalOrderTotal());
-                existOrderDetails.getOrderPackagesList().stream().forEach(orderPackages -> {
-                    finalOrderTotalCal.set(finalOrderTotalCal.get() + orderPackages.getFinalPackageAmount());
-                });*/
                 existOrderDetails.setFinalOrderTotal(orderDetailsReqDto.getFinalOrderTotalAmount());
                 existOrderDetails.setOrderStatus(Constant.Status.Approved);
                 existOrderDetails.setNote(orderDetailsReqDto.getNote());
@@ -609,23 +609,9 @@ public class UserServiceImpl implements UserService {
                 for (int i = 0; i < existingOrderDetailsList.size(); i++) {
                     OrderDetails existingOrderDetails = existingOrderDetailsList.get(i);
                     OrderDetails orderDetails = reCalculateOrderTotalForOrder(existingOrderDetails.getId());
-                    OrderDetailsResDto orderDetailsResDto = new OrderDetailsResDto();
-                    //  orderDetailsResDto.setGstAmount(orderDetails.getGstAmount());
-                    orderDetailsResDto.setOrderTotal(existingOrderDetails.getOrderTotal());
-                    orderDetailsResDto.setUserId(orderDetails.getUserId());
-                    orderDetailsResDto.setSubTotal(orderDetails.getSubTotal());
-                    orderDetailsResDto.setId(existingOrderDetails.getId());
-                    orderDetailsResDto.setCreatedAt(existingOrderDetails.getCreatedAt().toString());
-                    orderDetailsResDto.setUpdatedAt(existingOrderDetails.getUpdatedAt().toString());
-                    orderDetailsResDto.setUsername(existingOrderDetails.getUsername());
-                    orderDetailsResDto.setFirstName(existingOrderDetails.getFirstName());
-                    orderDetailsResDto.setAddress(existingOrderDetails.getAddress());
-                    orderDetailsResDto.setState(existingOrderDetails.getState());
-                    orderDetailsResDto.setGstNumber(existingOrderDetails.getGstNumber());
-                    orderDetailsResDto.setPanNumber(existingOrderDetails.getPanNumber());
-                    orderDetailsResDto.setPhoneNo(existingOrderDetails.getPhoneNo());
+                    OrderDetailsResDto orderDetailsResDto = mapper.map(orderDetails, OrderDetailsResDto.class);
                     List<PackagesResDto> packageList = new ArrayList<>();
-                    for (OrderPackages orderPackages : existingOrderDetails.getOrderPackagesList()) {
+                    for (OrderPackages orderPackages : orderDetails.getOrderPackagesList()) {
                         Packages packages = packagesRepo.findById(orderPackages.getPackageId()).orElse(null);
                         PackagesResDto packagesResDto = mapper.map(packages, PackagesResDto.class);
                         packagesResDto.setQty(orderPackages.getQty());

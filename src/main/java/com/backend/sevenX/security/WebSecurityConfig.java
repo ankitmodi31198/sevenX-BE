@@ -97,6 +97,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         list.add(Constant.EndPoints.Documents);
         list.add(Constant.EndPoints.PACKAGESBYSCREENNAME);
         list.add(Constant.EndPoints.PACKAGESLIST);
+        list.add(Constant.EndPoints.CONTACT_FORM);
         return list.toArray(new String[list.size()]);
     }
 
