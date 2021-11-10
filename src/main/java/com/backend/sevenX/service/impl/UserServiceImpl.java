@@ -574,12 +574,12 @@ public class UserServiceImpl implements UserService {
                     }
                 }
                 existOrderDetails.setFinalOrderTotal(orderDetailsReqDto.getFinalOrderTotalAmount());
-                existOrderDetails.setOrderStatus(Constant.Status.Approved);
+                existOrderDetails.setOrderStatus(orderDetailsReqDto.getOrderStatus());
                 existOrderDetails.setNote(orderDetailsReqDto.getNote());
                 orderDetailsRepo.save(existOrderDetails);
             }
-            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                    Constant.Messages.SUCCESS, "Saved"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                    Constant.Messages.SUCCESS, "Saved"), HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -597,8 +597,8 @@ public class UserServiceImpl implements UserService {
                 existOrderDetails.setTransactionNote(orderDetailsReqDto.getTransactionNote());
                 orderDetailsRepo.save(existOrderDetails);
             }
-            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                    Constant.Messages.SUCCESS, "Payment Done"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                    Constant.Messages.SUCCESS, "Payment Done"), HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
