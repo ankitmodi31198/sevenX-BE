@@ -20,6 +20,7 @@ import java.awt.*;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -131,7 +132,7 @@ public class UserController {
 				return imageService.saveDocumentByUserId(documentObj);
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
-				return new ResponseEntity<>("Error Occured in saving documents", HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>("Error Occured in saving documents" + e.getMessage() + " and " + Arrays.toString(e.getStackTrace()), HttpStatus.INTERNAL_SERVER_ERROR );
 			}
 		}else{
 			return new ResponseEntity<>("document is not found", HttpStatus.NOT_FOUND);

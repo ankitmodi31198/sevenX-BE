@@ -60,7 +60,7 @@ public class Constant {
     }
 
     public interface ImageFolders{
-        String Documents = "Documents";
+        String Documents = "/home/xstartup/apache-tomcat-9/webapps/test";
     }
 
     public interface JwtConst{
