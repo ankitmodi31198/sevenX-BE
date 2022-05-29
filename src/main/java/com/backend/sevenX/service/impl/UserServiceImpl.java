@@ -559,13 +559,13 @@ public class UserServiceImpl implements UserService {
                 if (Objects.nonNull(orderDetailsReqDto.getOrderPackageList()) && orderDetailsReqDto.getOrderPackageList().size() > 0) {
                     for (OrderPackageReqDto orderPackageReqDto : orderDetailsReqDto.getOrderPackageList()) {
                         OrderPackages existPackage = existOrderDetails.getOrderPackagesList().stream().filter(
-                                p -> p.getId().equals(orderPackageReqDto.getOrderPackageId())
+                                p -> p.getPackageId().equals(orderPackageReqDto.getOrderPackageId())
                         ).findAny().orElse(null);
                         if (existPackage != null) {
                             existPackage.setAdditionalCost(orderPackageReqDto.getAdditionalCost());
                             existPackage.setNote(orderPackageReqDto.getNote());
-                            if(Objects.nonNull(existPackage.getFinalPackageAmount())) {
-                                existPackage.setFinalPackageAmount(existPackage.getFinalPackageAmount());
+                            if(Objects.nonNull(orderPackageReqDto.getFinalPackageAmount())) {
+                                existPackage.setFinalPackageAmount(orderPackageReqDto.getFinalPackageAmount());
                             } else {
                                 existPackage.setFinalPackageAmount(existPackage.getPackageAmount());
                             }
@@ -574,12 +574,16 @@ public class UserServiceImpl implements UserService {
                     }
                 }
                 existOrderDetails.setFinalOrderTotal(orderDetailsReqDto.getFinalOrderTotalAmount());
-                existOrderDetails.setOrderStatus(Constant.Status.Approved);
+                existOrderDetails.setOrderStatus(orderDetailsReqDto.getOrderStatus());
                 existOrderDetails.setNote(orderDetailsReqDto.getNote());
                 orderDetailsRepo.save(existOrderDetails);
+                OrderDetailsResDto orderDetailsResDto = mapper.map(existOrderDetails, OrderDetailsResDto.class);
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, orderDetailsResDto), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.ERROR, "Not found Data"), HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                    Constant.Messages.SUCCESS, "Saved"), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -596,9 +600,12 @@ public class UserServiceImpl implements UserService {
                 existOrderDetails.setTransactionStatus(Constant.Status.Paid);
                 existOrderDetails.setTransactionNote(orderDetailsReqDto.getTransactionNote());
                 orderDetailsRepo.save(existOrderDetails);
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, "Payment Done"), HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.ERROR, "Payment Not Done"), HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
-                    Constant.Messages.SUCCESS, "Payment Done"), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),

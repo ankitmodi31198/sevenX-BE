@@ -12,4 +12,6 @@ public class OrderPackageReqDto {
    private String note;
 
    private Double additionalCost;
+
+   private Double finalPackageAmount;
 }
