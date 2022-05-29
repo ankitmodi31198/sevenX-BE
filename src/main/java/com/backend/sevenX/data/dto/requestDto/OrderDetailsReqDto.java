@@ -1,5 +1,6 @@
 package com.backend.sevenX.data.dto.requestDto;
 
+import com.backend.sevenX.utills.Constant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,4 +27,6 @@ public class OrderDetailsReqDto {
     private String transactionStatus;
 
     private String transactionNote;
+
+    private String orderStatus = Constant.Status.Pending;
 }
