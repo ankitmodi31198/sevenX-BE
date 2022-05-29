@@ -20,8 +20,6 @@ public class OrderDetailsReqDto {
 
     private Double additionalCost;
 
-    private String orderStatus;
-
     private String transactionId;
 
     private String transactionStatus;

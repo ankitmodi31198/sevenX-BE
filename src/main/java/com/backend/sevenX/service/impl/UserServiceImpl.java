@@ -601,7 +601,7 @@ public class UserServiceImpl implements UserService {
                 existOrderDetails.setTransactionNote(orderDetailsReqDto.getTransactionNote());
                 orderDetailsRepo.save(existOrderDetails);
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.OK.value(),
-                        Constant.Messages.SUCCESS, "Payment Done"), HttpStatus.INTERNAL_SERVER_ERROR);
+                        Constant.Messages.SUCCESS, "Payment Done"), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
                         Constant.Messages.ERROR, "Payment Not Done"), HttpStatus.INTERNAL_SERVER_ERROR);
