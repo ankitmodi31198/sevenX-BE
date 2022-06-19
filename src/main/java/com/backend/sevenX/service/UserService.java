@@ -53,4 +53,12 @@ public interface UserService {
 	ResponseEntity<?> getOrderDetailsByOrderId(Integer orderId);
 
 	ResponseEntity<?> savePayment(OrderDetailsReqDto orderDetailsReqDto);
+
+	ResponseEntity<?> saveStartupIdeaDetails(StartupIdeaFormReqDto startupIdeaFormReqDto, Integer userId);
+
+	ResponseEntity<?> saveCoFounderDetails(CoFounderFormReqDto coFounderFormReqDto, Integer userId);
+
+	ResponseEntity<?> saveStartupIdeaDocuments(String documentPath, Integer userId, Integer startupDetailsId);
+
+	ResponseEntity<?> saveCoFounderDocuments(String documentPath, Integer userId, Integer coFounderDetailsId);
 }

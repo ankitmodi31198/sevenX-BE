@@ -228,4 +228,52 @@ public class UserController {
 	public ResponseEntity<?> getAllOrder(@RequestBody OrderFilterDto orderFilterDto) throws Exception {
 		return userService.getAllOrderByFilter(orderFilterDto);
 	}
+
+	@PostMapping(Constant.EndPoints.STARTUP_IDEA)
+	public ResponseEntity<?> saveStartupIdeaDetails(@RequestBody @Valid StartupIdeaFormReqDto startupIdeaFormReqDto , @RequestAttribute("userId") Integer userId) throws Exception {
+		return userService.saveStartupIdeaDetails(startupIdeaFormReqDto , userId);
+	}
+
+	@PostMapping(Constant.EndPoints.CO_FOUNDER)
+	public ResponseEntity<?> saveCoFounderDetails(@RequestBody @Valid CoFounderFormReqDto coFounderFormReqDto, @RequestAttribute("userId") Integer userId) throws Exception {
+		return userService.saveCoFounderDetails(coFounderFormReqDto, userId);
+	}
+
+	@PostMapping(Constant.EndPoints.STARTUP_IDEA_DOCS)
+	public ResponseEntity<?> saveStartupIdeaDocuments(@RequestParam(value = "document") MultipartFile document,
+													  @RequestParam(value = "documentTitle", required = false) String documentTitle,
+													  @RequestParam(value = "documentFor", required = false) String documentFor,
+													  @RequestAttribute("userId") Integer userId,
+													  @RequestParam(value = "startupDetailsId", required = true) Integer startupDetailsId) throws Exception {
+		if (document != null) {
+			try {
+				String documentPath = imageService.storeUploadedFile(document);
+				return userService.saveStartupIdeaDocuments(documentPath, userId, startupDetailsId);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				return new ResponseEntity<>("Error Occured in saving documents" + e.getMessage() + " and " + Arrays.toString(e.getStackTrace()), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		} else {
+			return new ResponseEntity<>("document is not found", HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@PostMapping(Constant.EndPoints.CO_FOUNDER_DOCS)
+	public ResponseEntity<?> saveCoFounderDocuments(@RequestParam(value = "document") MultipartFile document,
+													@RequestParam(value = "documentTitle", required = false) String documentTitle,
+													@RequestParam(value = "documentFor", required = false) String documentFor,
+													@RequestAttribute("userId") Integer userId,
+													@RequestParam(value = "coFounderDetailsId", required = true) Integer coFounderDetailsId) throws Exception {
+		if (document != null) {
+			try {
+				String documentPath = imageService.storeUploadedFile(document);
+				return userService.saveCoFounderDocuments(documentPath, userId, coFounderDetailsId);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				return new ResponseEntity<>("Error Occured in saving documents" + e.getMessage() + " and " + Arrays.toString(e.getStackTrace()), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		} else {
+			return new ResponseEntity<>("document is not found", HttpStatus.NOT_FOUND);
+		}
+	}
 }

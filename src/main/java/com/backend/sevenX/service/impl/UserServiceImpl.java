@@ -72,6 +72,12 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private ContactFormRepo contactFormRepo;
 
+    @Autowired
+    private StartupIdeaDetailsRepo startupIdeaDetailsRepo;
+
+    @Autowired
+    private CoFounderDetailsRepo coFounderDetailsRepo;
+
     public ResponseEntity<?> login(LoginDto loginDto) {
         Users existUsers = usersRepo.findByUsername(loginDto.getUsername());
         if (existUsers == null) {
@@ -859,6 +865,50 @@ public class UserServiceImpl implements UserService {
         mail.setModel(data);
 
         emailService.sendForgotPasswordMail(mail);
+    }
+
+    @Override
+    public ResponseEntity<?> saveStartupIdeaDetails(StartupIdeaFormReqDto startupIdeaFormReqDto, Integer userId) {
+        try {
+            StartupIdeaDetails startupIdeaDetails = mapper.map(startupIdeaFormReqDto, StartupIdeaDetails.class);
+            if (startupIdeaDetails != null) {
+                startupIdeaDetails.setUserId(userId);
+                startupIdeaDetails = startupIdeaDetailsRepo.save(startupIdeaDetails);
+                StartupIdeaFormResDto startupIdeaFormResDto = mapper.map(startupIdeaDetails, StartupIdeaFormResDto.class);
+                return new ResponseEntity<>(new CommonResponse().getResponse(
+                        HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, startupIdeaFormResDto), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.ERROR, "Not saved , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> saveCoFounderDetails(CoFounderFormReqDto coFounderFormReqDto, Integer userId) {
+        try {
+            CoFounderDetails coFounderDetails = mapper.map(coFounderFormReqDto, CoFounderDetails.class);
+            if (coFounderDetails != null) {
+                coFounderDetails.setUserId(userId);
+                coFounderDetails = coFounderDetailsRepo.save(coFounderDetails);
+                CoFounderFormResDto coFounderFormResDto = mapper.map(coFounderDetails, CoFounderFormResDto.class);
+                return new ResponseEntity<>(new CommonResponse().getResponse(
+                        HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, coFounderFormResDto), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.ERROR, "Not saved , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

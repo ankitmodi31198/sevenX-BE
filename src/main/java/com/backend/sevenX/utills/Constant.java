@@ -57,6 +57,10 @@ public class Constant {
         String ORDERDETAILS = "/orderDetails";
         String ORDERDETAILSBYORDERID = "/orderDetails/{orderId}";
         String ORDERLIST = "/orderList";
+        String STARTUP_IDEA = "/startup-idea";
+        String CO_FOUNDER = "/co-founder";
+        String STARTUP_IDEA_DOCS = "/startup-idea-docs";
+        String CO_FOUNDER_DOCS = "/co-founder-docs";
     }
 
     public interface ImageFolders{
