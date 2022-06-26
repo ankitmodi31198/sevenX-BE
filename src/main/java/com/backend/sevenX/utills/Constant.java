@@ -61,6 +61,8 @@ public class Constant {
         String CO_FOUNDER = "/co-founder";
         String STARTUP_IDEA_DOCS = "/startup-idea-docs";
         String CO_FOUNDER_DOCS = "/co-founder-docs";
+        String STARTUP_IDEA_LIST = "/startup-idea-list";
+        String CO_FOUNDER_LIST = "/co-founder-list";
     }
 
     public interface ImageFolders{

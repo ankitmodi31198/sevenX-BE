@@ -17,9 +17,9 @@ public class CoFounderFormResDto {
 
     private String startupName;
 
-    private String mobileNo;
+    private String contactNo;
 
-    private String emailId;
+    private String email;
 
     private String startupYear;
 
@@ -35,5 +35,5 @@ public class CoFounderFormResDto {
 
     private String remarks;
 
-    //private List<String> documents;
+    private List<DocumentResDto> documents;
 }

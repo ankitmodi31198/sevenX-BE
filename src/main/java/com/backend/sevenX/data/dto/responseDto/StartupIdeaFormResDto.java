@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -15,9 +17,9 @@ public class StartupIdeaFormResDto {
 
     private String startupName;
 
-    private String mobileNo;
+    private String contactNo;
 
-    private String emailId;
+    private String email;
 
     private String stage;
 
@@ -27,5 +29,5 @@ public class StartupIdeaFormResDto {
 
     private String remarks;
 
-    //private List<String> documents;
+    private List<DocumentResDto> documents;
 }

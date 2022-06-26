@@ -20,8 +20,10 @@ import java.awt.*;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -134,7 +136,7 @@ public class UserController {
 				System.out.println(e.getMessage());
 				return new ResponseEntity<>("Error Occured in saving documents" + e.getMessage() + " and " + Arrays.toString(e.getStackTrace()), HttpStatus.INTERNAL_SERVER_ERROR );
 			}
-		}else{
+		} else{
 			return new ResponseEntity<>("document is not found", HttpStatus.NOT_FOUND);
 		}
 	}
@@ -240,40 +242,60 @@ public class UserController {
 	}
 
 	@PostMapping(Constant.EndPoints.STARTUP_IDEA_DOCS)
-	public ResponseEntity<?> saveStartupIdeaDocuments(@RequestParam(value = "document") MultipartFile document,
+	public ResponseEntity<?> saveStartupIdeaDocuments(@RequestParam(value = "documents") MultipartFile[] documents,
 													  @RequestParam(value = "documentTitle", required = false) String documentTitle,
 													  @RequestParam(value = "documentFor", required = false) String documentFor,
 													  @RequestAttribute("userId") Integer userId,
 													  @RequestParam(value = "startupDetailsId", required = true) Integer startupDetailsId) throws Exception {
-		if (document != null) {
-			try {
-				String documentPath = imageService.storeUploadedFile(document);
-				return userService.saveStartupIdeaDocuments(documentPath, userId, startupDetailsId);
-			} catch (Exception e) {
-				System.out.println(e.getMessage());
-				return new ResponseEntity<>("Error Occured in saving documents" + e.getMessage() + " and " + Arrays.toString(e.getStackTrace()), HttpStatus.INTERNAL_SERVER_ERROR);
+		List<Document> documentsList = new ArrayList<>();
+		for (MultipartFile document : documents) {
+			if (document != null) {
+				try {
+					Document documentObj = new Document();
+					String documentPath = imageService.storeUploadedFile(document);
+					documentObj.setDocumentURL(documentPath);
+					documentObj.setDocumentTitle(documentTitle);
+					documentObj.setDocumentFor(documentFor);
+					documentObj.setScreenName("STARTUP_IDEA_ANALYSIS");
+					documentObj.setUserId(userId);
+					documentsList.add(documentObj);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					return new ResponseEntity<>("Error Occured in saving documents" + e.getMessage() + " and " + Arrays.toString(e.getStackTrace()), HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			} else {
+				return new ResponseEntity<>("document is not found", HttpStatus.NOT_FOUND);
 			}
-		} else {
-			return new ResponseEntity<>("document is not found", HttpStatus.NOT_FOUND);
 		}
+		return userService.saveStartupIdeaDocuments(documentsList, userId, startupDetailsId);
 	}
 
 	@PostMapping(Constant.EndPoints.CO_FOUNDER_DOCS)
-	public ResponseEntity<?> saveCoFounderDocuments(@RequestParam(value = "document") MultipartFile document,
+	public ResponseEntity<?> saveCoFounderDocuments(@RequestParam(value = "documents") MultipartFile[] documents,
 													@RequestParam(value = "documentTitle", required = false) String documentTitle,
 													@RequestParam(value = "documentFor", required = false) String documentFor,
 													@RequestAttribute("userId") Integer userId,
 													@RequestParam(value = "coFounderDetailsId", required = true) Integer coFounderDetailsId) throws Exception {
-		if (document != null) {
-			try {
-				String documentPath = imageService.storeUploadedFile(document);
-				return userService.saveCoFounderDocuments(documentPath, userId, coFounderDetailsId);
-			} catch (Exception e) {
-				System.out.println(e.getMessage());
-				return new ResponseEntity<>("Error Occured in saving documents" + e.getMessage() + " and " + Arrays.toString(e.getStackTrace()), HttpStatus.INTERNAL_SERVER_ERROR);
+		List<Document> documentsList = new ArrayList<>();
+		for (MultipartFile document : documents) {
+			if (document != null) {
+				try {
+					Document documentObj = new Document();
+					String documentPath = imageService.storeUploadedFile(document);
+					documentObj.setDocumentURL(documentPath);
+					documentObj.setDocumentTitle(documentTitle);
+					documentObj.setDocumentFor(documentFor);
+					documentObj.setScreenName("FIND_A_CO_FOUNDER");
+					documentObj.setUserId(userId);
+					documentsList.add(documentObj);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					return new ResponseEntity<>("Error Occured in saving documents" + e.getMessage() + " and " + Arrays.toString(e.getStackTrace()), HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			} else {
+				return new ResponseEntity<>("document is not found", HttpStatus.NOT_FOUND);
 			}
-		} else {
-			return new ResponseEntity<>("document is not found", HttpStatus.NOT_FOUND);
 		}
+		return userService.saveCoFounderDocuments(documentsList, userId, coFounderDetailsId);
 	}
 }

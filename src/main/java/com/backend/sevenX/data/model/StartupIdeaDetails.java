@@ -5,9 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Getter
@@ -24,9 +23,9 @@ public class StartupIdeaDetails extends Base {
 
     private String startupName;
 
-    private String mobileNo;
+    private String email;
 
-    private String emailId;
+    private String contactNo;
 
     private String stage;
 
@@ -35,5 +34,8 @@ public class StartupIdeaDetails extends Base {
     private String industry;
 
     private String remarks;
+
+    @OneToMany( cascade = CascadeType.ALL)
+    private List<Document> documents;
 
 }

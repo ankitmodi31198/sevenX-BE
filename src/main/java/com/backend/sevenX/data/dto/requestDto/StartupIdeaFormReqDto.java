@@ -11,9 +11,9 @@ public class StartupIdeaFormReqDto {
 
     private String startupName;
 
-    private String mobileNo;
+    private String contactNo;
 
-    private String emailId;
+    private String email;
 
     private String stage;
 

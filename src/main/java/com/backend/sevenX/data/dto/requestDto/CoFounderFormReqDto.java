@@ -11,9 +11,9 @@ public class CoFounderFormReqDto {
 
     private String startupName;
 
-    private String mobileNo;
+    private String contactNo;
 
-    private String emailId;
+    private String email;
 
     private String startupYear;
 

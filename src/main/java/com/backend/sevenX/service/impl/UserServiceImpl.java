@@ -911,4 +911,46 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public ResponseEntity<?> saveStartupIdeaDocuments(List<Document> documentList, Integer userId, Integer startupDetailsId) {
+        try {
+            StartupIdeaDetails startupIdeaDetails = startupIdeaDetailsRepo.findById(startupDetailsId).orElse(null);
+            if (startupIdeaDetails != null) {
+                startupIdeaDetails.setDocuments(documentList);
+                startupIdeaDetailsRepo.save(startupIdeaDetails);
+                StartupIdeaFormResDto startupIdeaFormResDto = mapper.map(startupIdeaDetails, StartupIdeaFormResDto.class);
+                return new ResponseEntity<>(new CommonResponse().getResponse(
+                        HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, startupIdeaFormResDto), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.ERROR, "Not saved , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> saveCoFounderDocuments(List<Document> documentList, Integer userId, Integer coFounderDetailsId) {
+        try {
+            CoFounderDetails coFounderDetails = coFounderDetailsRepo.findById(coFounderDetailsId).orElse(null);
+            if (coFounderDetails != null) {
+                coFounderDetails.setDocuments(documentList);
+                coFounderDetailsRepo.save(coFounderDetails);
+                CoFounderFormResDto coFounderFormResDto = mapper.map(coFounderDetails, CoFounderFormResDto.class);
+                return new ResponseEntity<>(new CommonResponse().getResponse(
+                        HttpStatus.OK.value(),
+                        Constant.Messages.SUCCESS, coFounderFormResDto), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.NOT_FOUND.value(),
+                        Constant.Messages.ERROR, "Not saved , try again"), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(new CommonResponse().getResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    Constant.Messages.ERROR, Constant.Messages.SOMETHING_WENT_WRONG), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

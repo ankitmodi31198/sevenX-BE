@@ -1,7 +1,9 @@
 package com.backend.sevenX.controller;
 
+import com.backend.sevenX.data.dto.requestDto.CoFounderFilterDto;
 import com.backend.sevenX.data.dto.requestDto.ContactFilterDto;
 import com.backend.sevenX.data.dto.requestDto.FAQReqDto;
+import com.backend.sevenX.data.dto.requestDto.StartUpIdeaFilterDto;
 import com.backend.sevenX.service.AdminService;
 import com.backend.sevenX.utills.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,16 @@ public class AdminController {
 	@PostMapping(Constant.EndPoints.ALLCONTACT)
 	public ResponseEntity<?> getAllContactFormDetails(@RequestBody ContactFilterDto contactFilterDto) throws Exception {
 		return adminService.getAllContactFormDetails(contactFilterDto);
+	}
+
+	@PostMapping(Constant.EndPoints.STARTUP_IDEA_LIST)
+	public ResponseEntity<?> getAllStartupIdeaList(@RequestBody StartUpIdeaFilterDto startUpIdeaFilterDto) throws Exception {
+		return adminService.getAllStartupIdeaList(startUpIdeaFilterDto);
+	}
+
+	@PostMapping(Constant.EndPoints.CO_FOUNDER_LIST)
+	public ResponseEntity<?> getAllCoFounderList(@RequestBody CoFounderFilterDto coFounderFilterDto) throws Exception {
+		return adminService.getAllCoFounderList(coFounderFilterDto);
 	}
 
 }

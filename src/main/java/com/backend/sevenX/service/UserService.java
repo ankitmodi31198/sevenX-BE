@@ -1,10 +1,12 @@
 package com.backend.sevenX.service;
 
 import com.backend.sevenX.data.dto.requestDto.*;
+import com.backend.sevenX.data.model.Document;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.http.ResponseEntity;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import java.util.List;
 
 public interface UserService {
 
@@ -58,7 +60,7 @@ public interface UserService {
 
 	ResponseEntity<?> saveCoFounderDetails(CoFounderFormReqDto coFounderFormReqDto, Integer userId);
 
-	ResponseEntity<?> saveStartupIdeaDocuments(String documentPath, Integer userId, Integer startupDetailsId);
+	ResponseEntity<?> saveStartupIdeaDocuments(List<Document> documentPathList, Integer userId, Integer startupDetailsId);
 
-	ResponseEntity<?> saveCoFounderDocuments(String documentPath, Integer userId, Integer coFounderDetailsId);
+	ResponseEntity<?> saveCoFounderDocuments(List<Document> documentPathList, Integer userId, Integer coFounderDetailsId);
 }

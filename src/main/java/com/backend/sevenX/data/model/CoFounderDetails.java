@@ -7,9 +7,8 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Getter
@@ -26,9 +25,9 @@ public class CoFounderDetails extends Base {
 
     private String startupName;
 
-    private String mobileNo;
+    private String email;
 
-    private String emailId;
+    private String contactNo;
 
     private String startupYear;
 
@@ -43,4 +42,7 @@ public class CoFounderDetails extends Base {
     private String state;
 
     private String remarks;
+
+    @OneToMany( cascade = CascadeType.ALL)
+    private List<Document> documents;
 }
