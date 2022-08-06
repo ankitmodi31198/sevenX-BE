@@ -19,6 +19,8 @@ public class StartUpIdeaFilterDto {
 
     private Long toDate;
 
+    private String stage;
+
     private Integer offset;
 
     private Integer limit;

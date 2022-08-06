@@ -207,6 +207,10 @@ public class AdminServiceImpl implements AdminService {
 				queryBuilder.append(" AND sid.contact_no in (:contact_no)");
 				param.put("contact_no", startUpIdeaFilterDto.getContactNo());
 			}
+			if(General.nonNullNonEmpty(startUpIdeaFilterDto.getStage())) {
+				queryBuilder.append(" AND sid.stage in (:stage)");
+				param.put("stage", startUpIdeaFilterDto.getStage());
+			}
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			if (Objects.nonNull(startUpIdeaFilterDto.getFromDate())) {
 				Date from = new Date(startUpIdeaFilterDto.getFromDate());
@@ -274,6 +278,10 @@ public class AdminServiceImpl implements AdminService {
 			if(General.nonNullNonEmpty(coFounderFilterDto.getState())) {
 				queryBuilder.append(" AND cfd.state in (:state)");
 				param.put("state", coFounderFilterDto.getState());
+			}
+			if(General.nonNullNonEmpty(coFounderFilterDto.getStage())) {
+				queryBuilder.append(" AND cfd.stage in (:stage)");
+				param.put("stage", coFounderFilterDto.getStage());
 			}
 			if(General.nonNullNonEmpty(coFounderFilterDto.getStartupYear())) {
 				queryBuilder.append(" AND cfd.startup_year in (:startup_year)");

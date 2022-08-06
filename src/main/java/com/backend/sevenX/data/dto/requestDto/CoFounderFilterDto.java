@@ -27,6 +27,8 @@ public class CoFounderFilterDto {
 
     private Integer limit;
 
+    private String stage;
+
     private String sortField;
 
     private String sortOrder;

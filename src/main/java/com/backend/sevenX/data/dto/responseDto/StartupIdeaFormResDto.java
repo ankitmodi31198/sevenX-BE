@@ -30,4 +30,8 @@ public class StartupIdeaFormResDto {
     private String remarks;
 
     private List<DocumentResDto> documents;
+
+    private String createdAt;
+
+    private String updatedAt;
 }
